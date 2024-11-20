@@ -1,24 +1,12 @@
-import { useMutation } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { ShoppingBag } from "lucide-react";
 import { Button } from "../ui/button";
 import { FcGoogle } from "react-icons/fc";
 
-import axios from "axios";
-
 const LandingPage = () => {
-  const { mutate: signInWithGoogle, isPending } = useMutation({
-    mutationFn: async () => {
-      const response = await axios.post("/api/auth/google");
-      return response.data;
-    },
-    onSuccess: (data) => {
-      console.log("Sign-in successful:", data);
-    },
-    onError: (error) => {
-      console.error("Sign-in failed:", error);
-    },
-  });
+  const handleGoogleSignIn = () => {
+    window.location.href = `http://localhost:4000/auth/google`;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -71,11 +59,9 @@ const LandingPage = () => {
         <Button
           variant={"ghost"}
           className="w-full flex items-center justify-center bg-white border border-gray-300 shadow-sm hover:scale-105 transition-all duration-300 rounded-lg px-4 py-2"
-          onClick={() => signInWithGoogle()}
-          disabled={isPending}
+          onClick={() => handleGoogleSignIn()}
         >
-          <FcGoogle />
-          {isPending ? "Signing in..." : "Login with Google"}
+          <FcGoogle /> Login with Google
         </Button>
       </motion.div>
     </div>
