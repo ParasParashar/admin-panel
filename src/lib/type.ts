@@ -39,7 +39,7 @@ export type Category = {
     parentId?: string | null; // ID of the parent category (if exists)
     parent?: Category | null; // Parent category object
     subcategories: Category[]; // List of subcategories
-    products: Product[]; // List of products under this category
+    products?: Product[]; // List of products under this category
 };
 
 

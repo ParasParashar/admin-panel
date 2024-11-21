@@ -50,7 +50,11 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="bg-gray-100 dark:bg-gray-900">
+    <Sidebar
+      collapsible="icon"
+      variant="floating"
+      className="bg-gray-100 dark:bg-gray-900"
+    >
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-lg text-gray-800 dark:text-gray-200">
@@ -74,37 +78,33 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-      </SidebarContent>
-      <SidebarSeparator />
-      <SidebarFooter className="flex flex-col items-center justify-center  text-center">
-        {/* User Info */}
-        <div className="flex items-center space-x-3 mb-3">
-          <FaUserCircle className="w-10 h-10 text-gray-700" />
-          <div className="flex flex-col items-end">
-            <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-              {authUser?.name || "User Name"}
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {authUser?.email || "user@example.com"}
-            </p>
-          </div>
-        </div>
+        <footer className="mt-auto">
+          <SidebarSeparator />
+          <SidebarFooter className="flex flex-col items-center justify-center  text-center">
+            {/* User Info */}
+            <SidebarMenuButton asChild>
+              <div className="flex items-center space-x-3 mb-3">
+                <FaUserCircle className="w-16 h-16 text-gray-700" />
+                <span className="flex flex-col items-end">
+                  <p className="text-lg font-semibold text-gray-800">
+                    {authUser?.name || "User Name"}
+                  </p>
+                </span>
+              </div>
+            </SidebarMenuButton>
 
-        {/* Logout Button */}
-        <Button
-          onClick={handleLogout}
-          size={"sm"}
-          variant={"ghost"}
-          className=" space-x-1 text-xs  ml-auto text-muted-foreground "
-        >
-          {isPending ? (
-            <FaSpinner className="animate-spin" size={15} />
-          ) : (
-            <LucideLogOut size={16} />
-          )}
-          Logout
-        </Button>
-      </SidebarFooter>
+            {/* Logout Button */}
+            <SidebarMenuButton onClick={handleLogout}>
+              {isPending ? (
+                <FaSpinner className="animate-spin" size={15} />
+              ) : (
+                <LucideLogOut size={16} />
+              )}{" "}
+              <span>Logout</span>
+            </SidebarMenuButton>
+          </SidebarFooter>
+        </footer>
+      </SidebarContent>
     </Sidebar>
   );
 }

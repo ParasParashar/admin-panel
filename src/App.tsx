@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import AxiosBase from "./lib/axios";
 import PageLoader from "./components/loaders/PageLoader";
 import { Seller } from "./lib/type";
+import CategoryPage from "./components/pages/CategoryPage";
 
 function App() {
   const { data: authUser, isLoading } = useQuery<Seller>({
@@ -33,10 +34,13 @@ function App() {
         path="/"
         element={!authUser ? <Navigate to={"/login"} /> : <Layout />}
       >
-        {" "}
         <Route
           path="/"
           element={authUser ? <DashboardPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/category"
+          element={authUser ? <CategoryPage /> : <Navigate to="/login" />}
         />
       </Route>
     </Routes>
