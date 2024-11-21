@@ -10,11 +10,11 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+
 import { items } from "@/lib/app-path";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaUserCircle, FaSpinner } from "react-icons/fa";
-import { Button } from "../ui/button";
 import { Seller } from "@/lib/type";
 import toast from "react-hot-toast";
 import { LucideLogOut } from "lucide-react";
@@ -62,19 +62,37 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent className="py-3">
             <SidebarSeparator />
+
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.url}>
-                      <item.icon className="text-gray-700 dark:text-gray-300" />
-                      <span className="text-md font-semibold text-gray-800 dark:text-gray-200">
-                        {item.title}
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const location = useLocation();
+                const isActive = location.pathname === item.url;
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive}>
+                      <Link to={item.url}>
+                        <item.icon
+                          className={`${
+                            isActive ? "text-blue-500" : "text-gray-700"
+                          } dark:${
+                            isActive ? "text-blue-300" : "text-gray-300"
+                          }`}
+                        />
+                        <span
+                          className={`text-md font-semibold ${
+                            isActive
+                              ? "text-blue-600 dark:text-blue-400"
+                              : "text-gray-800 dark:text-gray-200"
+                          }`}
+                        >
+                          {item.title}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
