@@ -7,6 +7,7 @@ import AxiosBase from "./lib/axios";
 import PageLoader from "./components/loaders/PageLoader";
 import { Seller } from "./lib/type";
 import CategoryPage from "./components/pages/CategoryPage";
+import ProductPage from "./components/pages/ProductPage";
 
 function App() {
   const { data: authUser, isLoading } = useQuery<Seller>({
@@ -41,6 +42,10 @@ function App() {
         <Route
           path="/category"
           element={authUser ? <CategoryPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/product"
+          element={authUser ? <ProductPage /> : <Navigate to="/login" />}
         />
       </Route>
     </Routes>
