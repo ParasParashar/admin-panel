@@ -48,13 +48,13 @@ const ProductPage = () => {
   }
 
   return (
-    <div className="min-h-screen  w-full ">
-      <div className="max-w-3xl mx-auto  p-3 px-5">
-        <h1 className="text-3xl font-semibold text-gray-800 dark:text-gray-100 ">
+    <div className="min-h-screen w-full">
+      <div className="max-w-3xl mx-auto p-3 px-5">
+        <h1 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">
           Product Management
         </h1>
       </div>
-      <div className="mt-6 flex  flex-col w-full  items-center justify-center">
+      <div className="mt-6 flex flex-col w-full items-center justify-center">
         <div className="flex w-full justify-between">
           <Button
             onClick={onBack}
@@ -72,7 +72,7 @@ const ProductPage = () => {
             disabled={step === STEPS.PUBLISH}
             className={`${
               step === STEPS.PUBLISH
-                ? "bg-gray-300 "
+                ? "bg-gray-300"
                 : "bg-blue-500 hover:bg-blue-600"
             } px-4 py-2 text-white rounded-md`}
           >
@@ -80,16 +80,18 @@ const ProductPage = () => {
           </Button>
         </div>
         <div className="flex items-center space-x-2">
-          {Object.keys(STEPS).map((_, index) => (
-            <div
-              key={index}
-              className={`h-2 w-8   rounded-full ${
-                step === index
-                  ? "bg-blue-500 dark:bg-blue-400"
-                  : "bg-gray-300 dark:bg-gray-600"
-              }`}
-            />
-          ))}
+          {Object.values(STEPS)
+            .filter((value) => typeof value === "number") // Only map numeric values
+            .map((_, index) => (
+              <div
+                key={index}
+                className={`h-2 w-8 rounded-full ${
+                  step === index
+                    ? "bg-blue-500 dark:bg-blue-400"
+                    : "bg-gray-300 dark:bg-gray-600"
+                }`}
+              />
+            ))}
         </div>
       </div>
       <div className="mb-1">{content}</div>
