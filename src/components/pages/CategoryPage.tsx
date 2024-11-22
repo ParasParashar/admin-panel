@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import AxiosBase from "@/lib/axios";
 import { FaSpinner, FaTrash, FaEdit, FaPlus } from "react-icons/fa";
 import { Button } from "../ui/button";
 import toast from "react-hot-toast";
-import { Category } from "@/lib/type";
+import { useCategories } from "@/hooks/useCategory";
 
 export default function CategoryPage() {
   const queryClient = useQueryClient();
@@ -17,19 +17,7 @@ export default function CategoryPage() {
     name: string;
   } | null>(null);
 
-  const {
-    data: categories = [],
-    isLoading,
-    isError,
-  } = useQuery<Category[]>({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const { data } = await AxiosBase.get<{ categories: Category[] }>(
-        "/api/admin/categories"
-      );
-      return data.categories;
-    },
-  });
+  const { data: categories = [], isLoading, isError } = useCategories();
 
   const createCategoryMutation = useMutation({
     mutationFn: async ({
@@ -199,6 +187,7 @@ export default function CategoryPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => deleteCategoryMutation.mutate(category.id)}
+                    disabled={deleteCategoryMutation.isPending}
                   >
                     <FaTrash /> Delete
                   </Button>
@@ -235,7 +224,7 @@ export default function CategoryPage() {
               placeholder="Enter subcategory name"
               className="px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200"
             />
-            <Button type="submit">
+            <Button disabled={createCategoryMutation.isPending} type="submit">
               <FaPlus /> Add Subcategory
             </Button>
           </div>
