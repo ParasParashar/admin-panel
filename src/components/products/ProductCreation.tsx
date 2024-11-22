@@ -5,7 +5,12 @@ import toast from "react-hot-toast";
 import AxiosBase from "@/lib/axios";
 import { Loader } from "lucide-react";
 import { useCategories } from "@/hooks/useCategory";
-const ProductCreation = () => {
+
+interface ProductCreationProps {
+  onProductCreated: (id: string) => void; // Callback prop for passing productId
+}
+
+const ProductCreation = ({ onProductCreated }: ProductCreationProps) => {
   const [productDetails, setProductDetails] = useState({
     name: "",
     description: "",
@@ -30,6 +35,8 @@ const ProductCreation = () => {
         "/api/admin/product/create",
         productDetails
       );
+
+      onProductCreated(data.data.id);
       return data;
     },
     onSuccess: () => {
@@ -52,7 +59,7 @@ const ProductCreation = () => {
 
   return (
     <section className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-800 shadow-md rounded-md">
-      <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6">
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-6">
         Create Product
       </h2>
 

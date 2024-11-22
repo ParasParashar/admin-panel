@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ProductCreation from "../products/ProductCreation";
 import { Button } from "../ui/button";
+import ProductVariant from "../products/ProductVariant";
 
 enum STEPS {
   CREATE = 0,
@@ -10,7 +11,7 @@ enum STEPS {
 
 const ProductPage = () => {
   const [step, setStep] = useState(STEPS.CREATE);
-
+  const [productId, setProductId] = useState<string | null>(null);
   const onBack = () => {
     setStep((value) => value - 1);
   };
@@ -20,19 +21,12 @@ const ProductPage = () => {
 
   let content;
   if (step === STEPS.CREATE) {
-    content = <ProductCreation />;
+    content = (
+      <ProductCreation onProductCreated={(id: string) => setProductId(id)} />
+    );
   }
   if (step === STEPS.VARIANT) {
-    content = (
-      <div className="flex flex-col items-center">
-        <h2 className="text-xl font-bold text-gray-700 dark:text-gray-300">
-          Add Product Variants
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          Configure variants for your product here.
-        </p>
-      </div>
-    );
+    content = <ProductVariant productId={productId} />;
   }
   if (step === STEPS.PUBLISH) {
     content = (
@@ -81,7 +75,7 @@ const ProductPage = () => {
         </div>
         <div className="flex items-center space-x-2">
           {Object.values(STEPS)
-            .filter((value) => typeof value === "number") // Only map numeric values
+            .filter((value) => typeof value === "number")
             .map((_, index) => (
               <div
                 key={index}
