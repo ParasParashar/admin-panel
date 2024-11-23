@@ -7,9 +7,14 @@ type ImageUploadProps = {
   onImagesChange: (images: string[]) => void;
 };
 
+type UploadedImage = {
+  url: string;
+  publicId: string;
+};
+
 const ImageUpload = ({ onImagesChange }: ImageUploadProps) => {
   const imgRef = useRef<HTMLInputElement | null>(null);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<UploadedImage[]>([]);
   const [loading, setLoading] = useState(false);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,16 +29,22 @@ const ImageUpload = ({ onImagesChange }: ImageUploadProps) => {
     formData.append("cloud_name", "dxeknmtjw");
 
     try {
-      const response = await fetch(import.meta.env.VITE_CLOUDINARY_URL, {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_CLOUDINARY_URL}/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const data = await response.json();
-      if (data.secure_url) {
-        const updatedImages = [...selectedImages, data.secure_url];
+      if (data.secure_url && data.public_id) {
+        const updatedImages = [
+          ...selectedImages,
+          { url: data.secure_url, publicId: data.public_id },
+        ];
         setSelectedImages(updatedImages);
-        onImagesChange(updatedImages);
+        onImagesChange(updatedImages.map((image) => image.url));
       }
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -42,10 +53,28 @@ const ImageUpload = ({ onImagesChange }: ImageUploadProps) => {
     }
   };
 
-  const handleRemoveImage = (index: number) => {
+  const handleRemoveImage = async (index: number) => {
+    const imageToRemove = selectedImages[index];
     const updatedImages = selectedImages.filter((_, i) => i !== index);
+
     setSelectedImages(updatedImages);
-    onImagesChange(updatedImages);
+    onImagesChange(updatedImages.map((image) => image.url));
+
+    // Delete the image from Cloudinary
+    try {
+      await fetch(import.meta.env.VITE_CLOUDINARY_URL + "/destroy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          public_id: imageToRemove.publicId,
+          api_key: import.meta.env.VITE_CLOUDINARY_API_KEY,
+        }),
+      });
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
   };
 
   const handleDragStart = (
@@ -68,7 +97,7 @@ const ImageUpload = ({ onImagesChange }: ImageUploadProps) => {
       updatedImages.splice(targetIndex, 0, draggedImage);
 
       setSelectedImages(updatedImages);
-      onImagesChange(updatedImages);
+      onImagesChange(updatedImages.map((image) => image.url));
     }
   };
 
@@ -108,7 +137,7 @@ const ImageUpload = ({ onImagesChange }: ImageUploadProps) => {
               className="relative transition-all duration-500 ease-in-out cursor-grab"
             >
               <img
-                src={image}
+                src={image.url}
                 alt={`Uploaded Preview ${index + 1}`}
                 className="aspect-square hover:scale-105 transition-all duration-300 ease-in-out object-cover rounded-md shadow-md"
               />
