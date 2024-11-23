@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import AxiosBase from "@/lib/axios";
+import ImageUpload from "./ImageUpload";
 
 type prop = {
   productId?: string;
@@ -114,7 +115,7 @@ const ProductVariant = ({ productId }: prop) => {
     mutationFn: async () => {
       const { data } = await AxiosBase.post(
         "/api/admin/product/createvariant",
-        { variantData: variants, productId }
+        { variantData: variants, productId: "67407ea1bada666262618aae" }
       );
 
       //   onProductCreated(data.data.id);
@@ -187,7 +188,7 @@ const ProductVariant = ({ productId }: prop) => {
               placeholder="Enter color (e.g., Red)"
             />
 
-            <label className="block mb-2 text-gray-600 dark:text-gray-300">
+            {/* <label className="block mb-2 text-gray-600 dark:text-gray-300">
               Images:
             </label>
             <input
@@ -196,6 +197,16 @@ const ProductVariant = ({ productId }: prop) => {
               multiple
               onChange={(e) => handleInputChange(e, variantIndex)}
               className="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
+            /> */}
+
+            <ImageUpload
+              onImagesChange={(files) => {
+                setVariants((prev) => {
+                  const updatedVariants = [...prev];
+                  updatedVariants[variantIndex].images = files;
+                  return updatedVariants;
+                });
+              }}
             />
 
             <h4 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-4">
