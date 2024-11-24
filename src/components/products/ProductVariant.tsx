@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import AxiosBase from "@/lib/axios";
 import ImageUpload from "./ImageUpload";
+import { cn } from "@/lib/utils";
 
 type prop = {
   productId?: string;
@@ -15,7 +16,7 @@ const ProductVariant = ({ productId }: prop) => {
   const [variants, setVariants] = useState([
     {
       color: "",
-      images: [] as File[],
+      images: [] as string[],
       attributes: [{ size: "", stock: 0, price: 0 }],
     },
   ]);
@@ -49,7 +50,7 @@ const ProductVariant = ({ productId }: prop) => {
       ...prev,
       {
         color: "",
-        images: [] as File[],
+        images: [] as string[],
         attributes: [{ size: "", stock: 0, price: 0 }],
       },
     ]);
@@ -82,29 +83,29 @@ const ProductVariant = ({ productId }: prop) => {
   const validateVariants = () => {
     const newErrors: string[] = [];
     variants.forEach((variant, vIndex) => {
-      if (!variant.color.trim()) {
+      if (!variant.color.trim())
         newErrors.push(`Variant ${vIndex + 1}: Color is required.`);
-      }
+      if (!variant.images.length)
+        newErrors.push(
+          `Variant ${vIndex + 1}: At least one image is required.`
+        );
       variant.attributes.forEach((attr, aIndex) => {
-        if (!attr.size.trim()) {
+        if (!attr.size.trim())
           newErrors.push(
             `Variant ${vIndex + 1}, Attribute ${aIndex + 1}: Size is required.`
           );
-        }
-        if (attr.stock < 0) {
+        if (attr.stock < 0)
           newErrors.push(
             `Variant ${vIndex + 1}, Attribute ${
               aIndex + 1
             }: Stock must be >= 0.`
           );
-        }
-        if (attr.price < 0) {
+        if (attr.price < 0)
           newErrors.push(
             `Variant ${vIndex + 1}, Attribute ${
               aIndex + 1
             }: Price must be >= 0.`
           );
-        }
       });
     });
     setErrors(newErrors);
@@ -130,6 +131,9 @@ const ProductVariant = ({ productId }: prop) => {
     },
   });
 
+  useEffect(() => {
+    validateVariants();
+  }, [deleteAttribute, deleteVariant, handleInputChange]);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateVariants()) {
@@ -166,8 +170,12 @@ const ProductVariant = ({ productId }: prop) => {
               size={"icon"}
               variant={"ghost"}
               type="button"
+              disabled={variantIndex === 0}
               onClick={() => deleteVariant(variantIndex)}
-              className="absolute top-2 right-2 rounded-full text-red-500 hover:text-red-700"
+              className={cn(
+                "absolute top-2 right-2 rounded-full text-red-500 hover:text-red-700",
+                variantIndex === 0 && "hidden"
+              )}
             >
               ❌
             </Button>
@@ -188,19 +196,9 @@ const ProductVariant = ({ productId }: prop) => {
               placeholder="Enter color (e.g., Red)"
             />
 
-            {/* <label className="block mb-2 text-gray-600 dark:text-gray-300">
-              Images:
-            </label>
-            <input
-              name="images"
-              type="file"
-              multiple
-              onChange={(e) => handleInputChange(e, variantIndex)}
-              className="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
-            /> */}
-
             <ImageUpload
               onImagesChange={(files) => {
+                console.log("data of the  files", files);
                 setVariants((prev) => {
                   const updatedVariants = [...prev];
                   updatedVariants[variantIndex].images = files;
@@ -220,9 +218,13 @@ const ProductVariant = ({ productId }: prop) => {
                 <Button
                   variant={"ghost"}
                   size={"icon"}
+                  disabled={attrIndex === 0}
                   type="button"
                   onClick={() => deleteAttribute(variantIndex, attrIndex)}
-                  className="absolute rounded-full top-2 right-2 text-red-500 hover:text-red-700"
+                  className={cn(
+                    "absolute top-2 right-2 rounded-full text-red-500 hover:text-red-700",
+                    attrIndex === 0 && "hidden"
+                  )}
                 >
                   ❌
                 </Button>
@@ -288,12 +290,14 @@ const ProductVariant = ({ productId }: prop) => {
           + Add Variant
         </button>
 
-        <button
+        <Button
           type="submit"
-          className="w-full px-4 py-2 mt-6 text-white bg-purple-600 rounded-md hover:bg-purple-700"
+          variant={"outline"}
+          disabled={errors.length > 0}
+          className="w-full px-4 py-2 mt-6"
         >
           Save Variants
-        </button>
+        </Button>
       </form>
     </section>
   );
