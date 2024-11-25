@@ -17,7 +17,6 @@ const EditProductPage = () => {
     queryFn: async () => {
       const { data } = await AxiosBase.get(`/api/admin/product/${productId}`);
       if (!data.success) throw new Error(data.message);
-      console.log(data);
       return data.data;
     },
   });

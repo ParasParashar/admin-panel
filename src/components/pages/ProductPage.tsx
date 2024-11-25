@@ -59,7 +59,7 @@ const ProductPage = () => {
             Manage your product inventory and listings
           </p>
         </div>
-        <Button>
+        <Button onClick={() => naviage("/create")}>
           <Plus className="mr-2 h-4 w-4" /> Add Product
         </Button>
       </section>
