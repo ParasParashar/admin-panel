@@ -1,94 +1,141 @@
-import { useState } from "react";
-import ProductCreation from "../products/ProductCreation";
-import { Button } from "../ui/button";
-import ProductVariant from "../products/ProductVariant";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  MdOutlinePublishedWithChanges,
+  MdOutlineUnpublished,
+} from "react-icons/md";
 
-enum STEPS {
-  CREATE = 0,
-  VARIANT = 1,
-  PUBLISH = 2,
-}
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import AxiosBase from "@/lib/axios";
+import { Product } from "@/lib/type";
+import { PageTableSkeleton } from "../loaders/PageTableSkeleton";
+import { useNavigate } from "react-router-dom";
 
 const ProductPage = () => {
-  const [step, setStep] = useState(STEPS.CREATE);
-  const [productId, setProductId] = useState<string | null>(null);
-  const onBack = () => {
-    setStep((value) => value - 1);
-  };
-  const onNext = () => {
-    setStep((value) => value + 1);
+  const naviage = useNavigate();
+  const {
+    data: products,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const { data } = await AxiosBase.get("/api/admin/products");
+      if (!data.success) throw new Error(data.message);
+      return data.data;
+    },
+  });
+
+  const getStockStatus = (status: string) => {
+    const statusStyles = {
+      active: "active",
+      inactive: "secondary",
+      out_of_stock: "destructive",
+      discontinued: "outline",
+    };
+    return statusStyles[status as keyof typeof statusStyles] || "";
   };
 
-  let content;
-  if (step === STEPS.CREATE) {
-    content = (
-      <ProductCreation onProductCreated={(id: string) => setProductId(id)} />
-    );
-  }
-  if (step === STEPS.VARIANT) {
-    content = <ProductVariant productId={productId} />;
-  }
-  if (step === STEPS.PUBLISH) {
-    content = (
-      <div className="flex flex-col items-center">
-        <h2 className="text-xl font-bold text-green-700 dark:text-green-400">
-          Ready to Publish
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">
-          Review all details before publishing your product.
-        </p>
-      </div>
-    );
-  }
+  const handleClick = (id: string) => {
+    naviage("/edit/" + id);
+  };
 
   return (
-    <div className="min-h-screen w-full">
-      <div className="max-w-3xl mx-auto p-3 px-5">
-        <h1 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">
-          Product Management
-        </h1>
-      </div>
-      <div className="mt-6 flex flex-col w-full items-center justify-center">
-        <div className="flex w-full justify-between">
-          <Button
-            onClick={onBack}
-            disabled={step === STEPS.CREATE}
-            className={`${
-              step === STEPS.CREATE
-                ? "bg-gray-300"
-                : "bg-blue-500 hover:bg-blue-600"
-            } px-4 py-2 text-white rounded-md`}
-          >
-            Back
-          </Button>
-          <Button
-            onClick={onNext}
-            disabled={step === STEPS.PUBLISH}
-            className={`${
-              step === STEPS.PUBLISH
-                ? "bg-gray-300"
-                : "bg-blue-500 hover:bg-blue-600"
-            } px-4 py-2 text-white rounded-md`}
-          >
-            Next
-          </Button>
+    <div className="space-y-8 w-full">
+      <section className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Products</h2>
+          <p className="text-muted-foreground mt-2">
+            Manage your product inventory and listings
+          </p>
         </div>
-        <div className="flex items-center space-x-2">
-          {Object.values(STEPS)
-            .filter((value) => typeof value === "number")
-            .map((_, index) => (
-              <div
-                key={index}
-                className={`h-2 w-8 rounded-full ${
-                  step === index
-                    ? "bg-blue-500 dark:bg-blue-400"
-                    : "bg-gray-300 dark:bg-gray-600"
-                }`}
-              />
-            ))}
-        </div>
-      </div>
-      <div className="mb-1">{content}</div>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" /> Add Product
+        </Button>
+      </section>
+
+      <section className="rounded-md border p-4">
+        {/* Loading State */}
+        {isLoading &&
+          Array.from({ length: 3 }, (_, index: number) => index).map(
+            (_, i: number) => <PageTableSkeleton key={i} />
+          )}
+
+        {/* Error State */}
+        {isError && (
+          <p className="text-center text-red-500">
+            {error instanceof Error
+              ? error.message
+              : "An error occurred while fetching products."}
+          </p>
+        )}
+
+        {/* No Products Found */}
+        {!isLoading && !isError && products?.length === 0 && (
+          <div className="text-center">
+            <p className="text-muted-foreground">
+              You don't have any products yet.
+            </p>
+            <Button className="mt-4">
+              <Plus className="mr-2 h-4 w-4" /> Add Product
+            </Button>
+          </div>
+        )}
+
+        {/* Product Table */}
+        {!isLoading && !isError && products?.length > 0 && (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>S.No</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Live</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {products.map((product: Product, index: number) => (
+                <TableRow
+                  onClick={() => handleClick(product.id)}
+                  key={product.id}
+                  className="cursor-pointer"
+                >
+                  <TableCell className="text-xs">{index + 1}</TableCell>
+                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell>&#8377;{product.price}</TableCell>
+                  <TableCell>{product.totalQuantity}</TableCell>
+                  <TableCell>{product.category.name}</TableCell>
+                  <TableCell>
+                    <Badge variant={getStockStatus(product.status)}>
+                      {product.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {product.isPublished ? (
+                      <MdOutlinePublishedWithChanges size={20} color="blue" />
+                    ) : (
+                      <MdOutlineUnpublished size={20} color="gray" />
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </section>
     </div>
   );
 };
