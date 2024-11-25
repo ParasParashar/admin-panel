@@ -1,51 +1,74 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "../ui/button";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import AxiosBase from "@/lib/axios";
 import ImageUpload from "./ImageUpload";
 import { cn } from "@/lib/utils";
+import { RxCross1, RxCross2 } from "react-icons/rx";
 
 type prop = {
   productId?: string;
 };
 
-const ProductVariant = ({ productId }: prop) => {
-  console.log("this is the product id", productId);
+type Attribute = {
+  size: string;
+  stock: number;
+  price: number;
+};
 
-  const [variants, setVariants] = useState([
+type Variant = {
+  color: string;
+  images: string[];
+  attributes: Attribute[];
+};
+
+const ProductVariant = ({ productId }: prop) => {
+  const [variants, setVariants] = useState<Variant[]>([
     {
       color: "",
-      images: [] as string[],
+      images: [],
       attributes: [{ size: "", stock: 0, price: 0 }],
     },
   ]);
 
   const [errors, setErrors] = useState<string[]>([]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-    variantIndex: number,
-    attrIndex?: number
-  ) => {
-    const { name, value, type, files } = e.target;
-    const parsedValue = type === "number" ? +value : value;
+  // Function to handle input changes
+  const handleInputChange = useCallback(
+    (
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+      variantIndex: number,
+      attrIndex?: number
+    ) => {
+      const { name, value, type } = e.target;
+      const parsedValue = type === "number" ? +value : value;
 
-    setVariants((prev) => {
-      const updatedVariants = [...prev];
-      if (attrIndex !== undefined) {
-        // Update specific attribute
-        updatedVariants[variantIndex].attributes[attrIndex][name] = parsedValue;
-      } else if (type === "file") {
-        updatedVariants[variantIndex][name] = Array.from(files || []);
-      } else {
-        updatedVariants[variantIndex][name] = parsedValue;
-      }
-      return updatedVariants;
-    });
+      setVariants((prev) => {
+        const updatedVariants = [...prev];
+        if (attrIndex !== undefined) {
+          updatedVariants[variantIndex].attributes[attrIndex][
+            name as keyof Attribute
+          ] = parsedValue as never;
+        } else {
+          updatedVariants[variantIndex][name as keyof Variant] =
+            parsedValue as never;
+        }
+        return updatedVariants;
+      });
+    },
+
+    []
+  );
+  const handleImageState = (urls: string[], variantIndex: number) => {
+    setVariants((prev) =>
+      prev.map((variant, index) =>
+        index === variantIndex ? { ...variant, images: urls } : variant
+      )
+    );
   };
 
-  const addVariant = () => {
+  const addVariant = useCallback(() => {
     setVariants((prev) => [
       ...prev,
       {
@@ -54,13 +77,13 @@ const ProductVariant = ({ productId }: prop) => {
         attributes: [{ size: "", stock: 0, price: 0 }],
       },
     ]);
-  };
+  }, []);
 
-  const deleteVariant = (variantIndex: number) => {
+  const deleteVariant = useCallback((variantIndex: number) => {
     setVariants((prev) => prev.filter((_, index) => index !== variantIndex));
-  };
+  }, []);
 
-  const addAttribute = (variantIndex: number) => {
+  const addAttribute = useCallback((variantIndex: number) => {
     setVariants((prev) => {
       const updatedVariants = [...prev];
       updatedVariants[variantIndex].attributes.push({
@@ -70,17 +93,19 @@ const ProductVariant = ({ productId }: prop) => {
       });
       return updatedVariants;
     });
-  };
+  }, []);
 
-  const deleteAttribute = (variantIndex: number, attrIndex: number) => {
-    setVariants((prev) => {
-      const updatedVariants = [...prev];
-      updatedVariants[variantIndex].attributes.splice(attrIndex, 1);
-      return updatedVariants;
-    });
-  };
-
-  const validateVariants = () => {
+  const deleteAttribute = useCallback(
+    (variantIndex: number, attrIndex: number) => {
+      setVariants((prev) => {
+        const updatedVariants = [...prev];
+        updatedVariants[variantIndex].attributes.splice(attrIndex, 1);
+        return updatedVariants;
+      });
+    },
+    []
+  );
+  const validateVariants = useCallback(() => {
     const newErrors: string[] = [];
     variants.forEach((variant, vIndex) => {
       if (!variant.color.trim())
@@ -110,38 +135,46 @@ const ProductVariant = ({ productId }: prop) => {
     });
     setErrors(newErrors);
     return newErrors.length === 0;
-  };
+  }, [variants]);
 
-  const { mutate, isPending } = useMutation({
+  const { mutate } = useMutation({
     mutationFn: async () => {
       const { data } = await AxiosBase.post(
         "/api/admin/product/createvariant",
-        { variantData: variants, productId: "67407ea1bada666262618aae" }
+        {
+          variantData: variants,
+          productId,
+        }
       );
-
-      //   onProductCreated(data.data.id);
+      if (!data.success)
+        throw new Error(data.message || "Unknown error occurred.");
       return data;
     },
     onSuccess: () => {
       toast.success("Product created successfully!");
     },
-    onError: () => {
-      console.log("Error creating product variant!");
-      toast.error("Failed to create product.");
+    onError: (error: { response: any; message: any }) => {
+      console.error("API Error:", error);
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
     },
   });
 
   useEffect(() => {
     validateVariants();
-  }, [deleteAttribute, deleteVariant, handleInputChange]);
+  }, [variants, validateVariants]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateVariants()) {
-      return;
-    }
-    console.log("Submitted Variants:", variants);
+    if (!validateVariants()) return;
     mutate();
-    // Handle submission logic here (e.g., send to backend).
   };
 
   return (
@@ -177,7 +210,7 @@ const ProductVariant = ({ productId }: prop) => {
                 variantIndex === 0 && "hidden"
               )}
             >
-              ❌
+              <RxCross2 color="red" />
             </Button>
 
             <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
@@ -197,14 +230,7 @@ const ProductVariant = ({ productId }: prop) => {
             />
 
             <ImageUpload
-              onImagesChange={(files) => {
-                console.log("data of the  files", files);
-                setVariants((prev) => {
-                  const updatedVariants = [...prev];
-                  updatedVariants[variantIndex].images = files;
-                  return updatedVariants;
-                });
-              }}
+              onImagesChange={(url) => handleImageState(url, variantIndex)}
             />
 
             <h4 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-4">
@@ -226,7 +252,7 @@ const ProductVariant = ({ productId }: prop) => {
                     attrIndex === 0 && "hidden"
                   )}
                 >
-                  ❌
+                  <RxCross1 />
                 </Button>
 
                 <label className="block mb-2 text-gray-600 dark:text-gray-300">
@@ -253,7 +279,6 @@ const ProductVariant = ({ productId }: prop) => {
                     handleInputChange(e, variantIndex, attrIndex)
                   }
                   className="w-full px-4 py-2 mb-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
-                  placeholder="Enter stock"
                 />
                 <label className="block mb-2 text-gray-600 dark:text-gray-300">
                   Price:
@@ -261,42 +286,31 @@ const ProductVariant = ({ productId }: prop) => {
                 <input
                   name="price"
                   type="number"
-                  step="0.01"
                   value={attr.price}
                   onChange={(e) =>
                     handleInputChange(e, variantIndex, attrIndex)
                   }
-                  className="w-full px-4 py-2 mb-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
-                  placeholder="Enter price"
+                  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
                 />
               </div>
             ))}
-
-            <button
+            <Button
               type="button"
+              variant={"outline"}
+              className="mt-2"
               onClick={() => addAttribute(variantIndex)}
-              className="px-4 py-2 text-sm text-white bg-green-500 rounded-md hover:bg-green-600"
             >
-              + Add Attribute
-            </button>
+              Add Attribute
+            </Button>
           </div>
         ))}
 
-        <button
-          type="button"
-          onClick={addVariant}
-          className="px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 mt-4"
-        >
-          + Add Variant
-        </button>
+        <Button type="button" onClick={addVariant}>
+          Add Variant
+        </Button>
 
-        <Button
-          type="submit"
-          variant={"outline"}
-          disabled={errors.length > 0}
-          className="w-full px-4 py-2 mt-6"
-        >
-          Save Variants
+        <Button type="submit" className="w-full">
+          Submit
         </Button>
       </form>
     </section>

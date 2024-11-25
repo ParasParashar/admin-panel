@@ -169,6 +169,7 @@ import { Button } from "../ui/button";
 import { RxCross1 } from "react-icons/rx";
 import { CiImageOn } from "react-icons/ci";
 import AxiosBase from "@/lib/axios";
+import toast from "react-hot-toast";
 
 type ImageUploadProps = {
   onImagesChange: (images: string[]) => void;
@@ -191,16 +192,19 @@ const ImageUpload = ({ onImagesChange }: ImageUploadProps) => {
       try {
         const { data } = await AxiosBase.post("/api/image/upload", { img });
         if (data.error) throw new Error(data.error || "Error creating upload");
-        setSelectedImages((prev) => [...prev, data.img]);
-      } catch (error) {
+        const updatedImages = [...selectedImages, data.img];
+        setSelectedImages(updatedImages);
+        onImagesChange(updatedImages);
+        toast.success("Image uploaded successfully");
+      } catch (error: any) {
         console.log("Error uploading images", error);
+        toast.error("Error in uploading image Please try again");
       } finally {
         setLoading(false);
       }
       reader.readAsDataURL(file);
     }
   };
-  console.log(selectedImages);
   const handleRemoveImage = async (index: number) => {
     const imageToRemove = selectedImages[index];
     setLoading(true);
@@ -215,8 +219,10 @@ const ImageUpload = ({ onImagesChange }: ImageUploadProps) => {
       });
       if (data.error) throw new Error(data.error || "Error deleting image");
       setSelectedImages(updatedImages);
+      toast.success(data.message);
     } catch (error) {
       console.log("Error deleting images", error);
+      toast.error("Error deleting images");
     } finally {
       setLoading(false);
     }
