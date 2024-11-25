@@ -9,6 +9,7 @@ import { Seller } from "./lib/type";
 import CategoryPage from "./components/pages/CategoryPage";
 import ProductPage from "./components/pages/ProductPage";
 import CreateProductPage from "./components/pages/CreateProductPage";
+import EditProductPage from "./components/pages/EditProductPage";
 
 function App() {
   const { data: authUser, isLoading } = useQuery<Seller>({
@@ -51,6 +52,10 @@ function App() {
         <Route
           path="/create"
           element={authUser ? <CreateProductPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/edit/:id"
+          element={authUser ? <EditProductPage /> : <Navigate to="/login" />}
         />
       </Route>
     </Routes>

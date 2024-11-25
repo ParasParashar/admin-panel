@@ -1,7 +1,7 @@
 import { useState } from "react";
-import ProductCreation from "../products/ProductCreation";
 import { Button } from "../ui/button";
 import ProductVariant from "../products/ProductVariant";
+import ProductForm from "../products/ProductForm";
 
 enum STEPS {
   CREATE = 0,
@@ -22,11 +22,11 @@ const CreateProductPage = () => {
   let content;
   if (step === STEPS.CREATE) {
     content = (
-      <ProductCreation onProductCreated={(id: string) => setProductId(id)} />
+      <ProductForm mode="create" onSuccess={(id: string) => setProductId(id)} />
     );
   }
   if (step === STEPS.VARIANT) {
-    content = <ProductVariant productId={productId} />;
+    content = <ProductVariant productId={productId as string} />;
   }
   if (step === STEPS.PUBLISH) {
     content = (
