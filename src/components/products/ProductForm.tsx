@@ -123,7 +123,7 @@ const ProductForm = ({ mode, defaultData, onSuccess }: ProductFormProps) => {
   return (
     <section className="min-w-3xl mx-auto p-3 lg:px-5 bg-white shadow-md rounded-md">
       <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">
-        {mode === "create" ? "Create Product" : "Edit Product"}
+        {mode === "create" ? "Create Product Details" : "Edit Product Details"}
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-6 grid grid-cols-1">

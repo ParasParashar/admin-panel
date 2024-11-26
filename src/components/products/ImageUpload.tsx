@@ -173,11 +173,14 @@ import toast from "react-hot-toast";
 
 type ImageUploadProps = {
   onImagesChange: (images: string[]) => void;
+  initialImages: string[];
 };
 
-const ImageUpload = ({ onImagesChange }: ImageUploadProps) => {
+const ImageUpload = ({ onImagesChange, initialImages }: ImageUploadProps) => {
   const imgRef = useRef<HTMLInputElement | null>(null);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<string[]>(
+    initialImages ? initialImages : []
+  );
   const [img, setImg] = useState<string | ArrayBuffer | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -285,7 +288,7 @@ const ImageUpload = ({ onImagesChange }: ImageUploadProps) => {
               onDragStart={(e) => handleDragStart(e, index)}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, index)}
-              className="relative transition-all duration-500 ease-in-out cursor-grab"
+              className="relative transition-all duration-500 group ease-in-out cursor-grab"
             >
               <img
                 src={image}
@@ -299,7 +302,7 @@ const ImageUpload = ({ onImagesChange }: ImageUploadProps) => {
                 size={"icon"}
                 variant={"ghost"}
                 onClick={() => handleRemoveImage(index)}
-                className="absolute top-1 right-1 text-white border-none ring-0 rounded-full hover:bg-red-500"
+                className="absolute top-[-10px] border-2 right-[-10px] text-white border-none group-hover:bg-red-400 ring-0 rounded-full hover:bg-red-400"
               >
                 <RxCross1 size={20} />
               </Button>

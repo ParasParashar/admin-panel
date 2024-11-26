@@ -26,7 +26,7 @@ const CreateProductPage = () => {
     );
   }
   if (step === STEPS.VARIANT) {
-    content = <ProductVariant productId={productId as string} />;
+    content = <ProductVariant mode="create" productId={productId as string} />;
   }
   if (step === STEPS.PUBLISH) {
     content = (
