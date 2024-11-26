@@ -1,17 +1,17 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Button } from "../ui/button";
 import ProductVariant from "../products/ProductVariant";
-import ProductForm from "../products/ProductForm";
+import { ProductCreationSkeleton } from "../loaders/PageTableSkeleton";
 
 enum STEPS {
   CREATE = 0,
   VARIANT = 1,
   PUBLISH = 2,
 }
+const ProductForm = lazy(() => import("../products/ProductForm"));
 
 const CreateProductPage = () => {
   const [step, setStep] = useState(STEPS.CREATE);
-  const [productId, setProductId] = useState<string | null>(null);
   const onBack = () => {
     setStep((value) => value - 1);
   };
@@ -21,12 +21,10 @@ const CreateProductPage = () => {
 
   let content;
   if (step === STEPS.CREATE) {
-    content = (
-      <ProductForm mode="create" onSuccess={(id: string) => setProductId(id)} />
-    );
+    content = <ProductForm mode="create" />;
   }
   if (step === STEPS.VARIANT) {
-    content = <ProductVariant mode="create" productId={productId as string} />;
+    content = <ProductVariant mode="create" />;
   }
   if (step === STEPS.PUBLISH) {
     content = (
@@ -44,11 +42,14 @@ const CreateProductPage = () => {
   return (
     <div className="min-h-screen w-full">
       <div className="max-w-3xl mx-auto p-3 px-5">
-        <h1 className="text-3xl font-semibold text-gray-800 dark:text-gray-100">
+        <h1 className="text-2xl font-semibold  text-muted-foreground">
           Product Management
         </h1>
       </div>
-      <div className="mt-6 flex flex-col w-full items-center justify-center">
+      <Suspense fallback={<ProductCreationSkeleton />}>
+        <ProductForm mode="create" />
+      </Suspense>{" "}
+      {/* <div className="mt-6 flex flex-col w-full items-center justify-center">
         <div className="flex w-full justify-between">
           <Button
             onClick={onBack}
@@ -87,8 +88,8 @@ const CreateProductPage = () => {
               />
             ))}
         </div>
-      </div>
-      <div className="mb-1">{content}</div>
+      </div> */}
+      {/* <div className="mb-1">{content}</div> */}
     </div>
   );
 };

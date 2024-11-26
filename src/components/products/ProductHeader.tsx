@@ -12,13 +12,18 @@ type props = {
   isPublished?: boolean;
   totalQuantity?: number;
   mode: "create" | "edit";
+  variantLength: number;
 };
 
-export function ProductHeader({ totalQuantity = 0, isPublished, mode }: props) {
+export function ProductHeader({
+  totalQuantity = 0,
+  isPublished,
+  mode,
+  variantLength,
+}: props) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id: productId } = useParams();
-
   const {
     mutate: publishProduct,
     isPending,
@@ -38,6 +43,7 @@ export function ProductHeader({ totalQuantity = 0, isPublished, mode }: props) {
           : "unpublished"
       );
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      navigate("/product");
       queryClient.invalidateQueries({ queryKey: ["product", productId] });
     },
     onError: () => {
@@ -55,7 +61,7 @@ export function ProductHeader({ totalQuantity = 0, isPublished, mode }: props) {
     onSuccess: (data) => {
       toast.success(data.message || "Procuct is deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      navigate("/products");
+      navigate("/product");
     },
     onError: () => {
       toast.error(error?.message || "Failed to do action.");
@@ -67,6 +73,7 @@ export function ProductHeader({ totalQuantity = 0, isPublished, mode }: props) {
     publishProduct();
   };
 
+  const isPublishProduct = variantLength > 0;
   return (
     <header className="flex items-center justify-between  ">
       {/* Left Section: Total Quantity */}
@@ -82,7 +89,7 @@ export function ProductHeader({ totalQuantity = 0, isPublished, mode }: props) {
         <Button
           onClick={handleToggle}
           variant="outline"
-          disabled={isPending}
+          disabled={isPending || !isPublishProduct}
           size="sm"
           className=" border-2 border-muted-foreground hover:scale-110 transition-all ease-in duration-300"
         >

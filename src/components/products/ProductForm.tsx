@@ -14,11 +14,11 @@ import {
 } from "../ui/select";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
+import { useNavigate } from "react-router-dom";
 
 interface ProductFormProps {
   mode: "create" | "edit";
   defaultData?: Partial<ProductDetails>;
-  onSuccess?: (id: string) => void;
 }
 
 interface ProductDetails {
@@ -31,7 +31,7 @@ interface ProductDetails {
   status?: string;
 }
 
-const ProductForm = ({ mode, defaultData, onSuccess }: ProductFormProps) => {
+const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
   const [productDetails, setProductDetails] = useState<ProductDetails>({
     name: "",
     description: "",
@@ -40,7 +40,7 @@ const ProductForm = ({ mode, defaultData, onSuccess }: ProductFormProps) => {
     status: "",
   });
   const queryClient = useQueryClient();
-
+  const navigate = useNavigate();
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const {
@@ -72,7 +72,7 @@ const ProductForm = ({ mode, defaultData, onSuccess }: ProductFormProps) => {
           : `/api/admin/product/update/${defaultData?.id}`;
       const { data } = await AxiosBase.post(endpoint, productDetails);
       if (!data.success) throw new Error(data.message);
-      if (mode === "create") onSuccess(data.data.id);
+      if (mode === "create") navigate("/create/" + data.data.id);
       return data;
     },
     onSuccess: () => {

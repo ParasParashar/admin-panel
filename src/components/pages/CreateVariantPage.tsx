@@ -1,24 +1,18 @@
-import AxiosBase from "@/lib/axios";
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import { ProductHeader } from "../products/ProductHeader";
 import {
   ProductCreationSkeleton,
   ProductVariantSkeleton,
 } from "../loaders/PageTableSkeleton";
-import { ProductHeader } from "../products/ProductHeader";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import AxiosBase from "@/lib/axios";
 import { Variant } from "@/lib/type";
 
-const EditProductPage = () => {
+const CreateVariantPage = () => {
   const { id: productId } = useParams();
-  const ProductForm = lazy(() => import("../products/ProductForm"));
   const ProductVariant = lazy(() => import("../products/ProductVariant"));
-  const {
-    data: product,
-    isLoading,
-    error,
-    isError,
-  } = useQuery({
+  const { data: product, isLoading } = useQuery({
     queryKey: ["product", productId],
     queryFn: async () => {
       const { data } = await AxiosBase.get(`/api/admin/product/${productId}`);
@@ -37,22 +31,24 @@ const EditProductPage = () => {
   return (
     <div className="p-1  space-y-2 lg:p-6">
       <ProductHeader
-        mode="edit"
-        isPublished={product.isPublished}
+        mode="create"
         variantLength={product.variants.map((v: Variant) => v.images).length}
+        isPublished={product.isPublished}
         totalQuantity={product.totalQuantity}
       />
-      <Suspense fallback={<ProductCreationSkeleton />}>
-        <ProductForm mode="edit" defaultData={product} />
-      </Suspense>
+      <p className="text-muted-foreground text-xs lg:text-sm">
+        You can change status later
+      </p>
+      <p className="text-muted-foreground text-xs  lg:text-sm">
+        Create Product Variants and it&apos;s attributes and then publish the
+        product.
+      </p>
+
       <Suspense fallback={<ProductVariantSkeleton />}>
-        <ProductVariant mode="edit" defaultVariants={product.variants} />
+        <ProductVariant mode="create" />
       </Suspense>
-      {isError && (
-        <span className="text-xs text-red-500">Error: {error?.message}</span>
-      )}
     </div>
   );
 };
 
-export default EditProductPage;
+export default CreateVariantPage;
