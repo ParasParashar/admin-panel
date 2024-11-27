@@ -19,6 +19,7 @@ import { Seller } from "@/lib/type";
 import toast from "react-hot-toast";
 import { LucideLogOut } from "lucide-react";
 import AxiosBase from "@/lib/axios";
+import TrashDropDown from "./TrashDropDown";
 
 export function AppSidebar() {
   const navigate = useNavigate();
@@ -97,6 +98,8 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         <footer className="mt-auto">
+          <TrashDropDown />
+
           <SidebarSeparator />
           <SidebarFooter className="flex flex-col items-center justify-center  text-center">
             {/* User Info */}

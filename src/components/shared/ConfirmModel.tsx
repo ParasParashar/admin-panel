@@ -12,8 +12,9 @@ import {
 interface props {
   children: React.ReactNode;
   onConfirm: () => void;
+  message?: string;
 }
-const ConfirmModel = ({ children, onConfirm }: props) => {
+const ConfirmModel = ({ children, message, onConfirm }: props) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
@@ -21,7 +22,7 @@ const ConfirmModel = ({ children, onConfirm }: props) => {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be reverse.
+            {message ? message : "            This action cannot be reverse."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

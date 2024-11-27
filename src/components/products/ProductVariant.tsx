@@ -200,8 +200,8 @@ const ProductVariant = ({ defaultVariants = [], mode }: Props) => {
   };
 
   return (
-    <section className="w-full dark:bg-gray-800 rounded-md">
-      <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 my-6 ">
+    <section className="w-full dark:bg-gray-800  rounded-md">
+      <h3 className="text-xl font-semibold px-2 text-gray-800 dark:text-gray-200 mt-6 ">
         {mode === "create"
           ? "Create Product Variants"
           : "Edit Product Variants"}
@@ -216,10 +216,12 @@ const ProductVariant = ({ defaultVariants = [], mode }: Props) => {
           </ul>
         </div>
       )}
-
+      <span className="text-xs px-2 text-muted-foreground ">
+        Atleast one variant is required
+      </span>
       <form
         onSubmit={handleSubmit}
-        className=" grid grid-cols-1  lg:grid-cols-2 2xl:grid-cols-3 w-full gap-2"
+        className=" grid grid-cols-1  mt-2 lg:grid-cols-2 2xl:grid-cols-3 w-full gap-2"
       >
         {variants.map((variant, variantIndex) => (
           <div

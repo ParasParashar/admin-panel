@@ -5,6 +5,7 @@ import { FaSpinner, FaTrash, FaEdit, FaPlus } from "react-icons/fa";
 import { Button } from "../ui/button";
 import toast from "react-hot-toast";
 import { useCategories } from "@/hooks/useCategory";
+import ConfirmModel from "../shared/ConfirmModel";
 
 export default function CategoryPage() {
   const queryClient = useQueryClient();
@@ -183,14 +184,17 @@ export default function CategoryPage() {
                   >
                     <FaEdit /> Edit
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => deleteCategoryMutation.mutate(category.id)}
-                    disabled={deleteCategoryMutation.isPending}
+                  <ConfirmModel
+                    onConfirm={() => deleteCategoryMutation.mutate(category.id)}
                   >
-                    <FaTrash /> Delete
-                  </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={deleteCategoryMutation.isPending}
+                    >
+                      <FaTrash /> Delete
+                    </Button>
+                  </ConfirmModel>
                 </div>
               </li>
             ))}

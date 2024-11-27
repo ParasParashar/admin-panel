@@ -61,6 +61,8 @@ export function ProductHeader({
     onSuccess: (data) => {
       toast.success(data.message || "Procuct is deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["trash"] });
+
       navigate("/product");
     },
     onError: () => {
@@ -100,7 +102,10 @@ export function ProductHeader({
         </Button>
 
         {/* Delete Button */}
-        <ConfirmModel onConfirm={deleteProduct}>
+        <ConfirmModel
+          message="You can also recover product from the trash. If you deleted mistakely."
+          onConfirm={deleteProduct}
+        >
           <Button
             className="ml-auto  hover:scale-110 transition-all ease-in duration-300"
             size={"sm"}
