@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 interface props {
   children: React.ReactNode;
-  onConfirm: () => void;
+  onConfirm: (e?: any) => void;
   message?: string;
 }
 const ConfirmModel = ({ children, message, onConfirm }: props) => {
