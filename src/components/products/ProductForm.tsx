@@ -27,8 +27,10 @@ interface ProductDetails {
   price: number;
   categoryId: string;
   id?: string;
-  ispubLished?: boolean;
+  isPublished?: boolean;
   status?: string;
+  isFeatured?: boolean;
+  discountPercent?: number;
 }
 
 const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
@@ -37,7 +39,9 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
     description: "",
     price: 0,
     categoryId: "",
-    status: "",
+    status: mode === "edit" ? defaultData?.status ?? "" : "",
+    discountPercent: defaultData?.discountPercent ?? 0,
+    isFeatured: false,
   });
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -49,8 +53,16 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
     isError: categoryError,
   } = useCategories();
 
+  // Calculate discounted price
+  const discountedPrice = productDetails.discountPercent
+    ? productDetails.price -
+      (productDetails.price * productDetails.discountPercent) / 100
+    : null;
+
   useEffect(() => {
-    if (defaultData) setProductDetails((prev) => ({ ...prev, ...defaultData }));
+    if (defaultData) {
+      setProductDetails((prev) => ({ ...prev, ...defaultData }));
+    }
   }, [defaultData]);
 
   const validateFields = () => {
@@ -70,12 +82,12 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
         mode === "create"
           ? "/api/admin/product/create"
           : `/api/admin/product/update/${defaultData?.id}`;
-      const { data } = await AxiosBase.post(endpoint, productDetails);
+      const formData = { ...productDetails, discountedPrice };
+      const { data } = await AxiosBase.post(endpoint, formData);
       if (!data.success) throw new Error(data.message);
-      if (mode === "create") navigate("/create/" + data.data.id);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success(
         mode === "create"
           ? "Product created successfully!"
@@ -87,8 +99,10 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
           description: "",
           price: 0,
           categoryId: "",
+          status: "",
+          discountPercent: 0,
         });
-        setFormErrors({});
+        navigate(`/create/${data.data.id}`);
       }
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
@@ -107,11 +121,14 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
     >
   ) => {
     const { name, value } = e.target;
-    setProductDetails((prevDetails) => ({
-      ...prevDetails,
-      [name]: value,
+
+    setProductDetails((prev) => ({
+      ...prev,
+      [name]: name === "price" || name === "discountPercent" ? +value : value,
     }));
-    setFormErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
+
+    // Clear errors as user updates fields
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -120,6 +137,7 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
       mutate();
     }
   };
+
   return (
     <section className="min-w-3xl mx-auto p-3 lg:px-5 bg-white shadow-md rounded-md">
       <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">
@@ -145,7 +163,7 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
         </div>
 
         <div>
-          <label className=" text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Description
           </label>
           <Textarea
@@ -172,82 +190,118 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
           )}
         </div>
 
-        <div className="grid gap-1 grid-cols-2 items-center justify-center">
-          <div>
-            <label
-              htmlFor="categoryId"
-              className=" text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Category
-            </label>
-            {isLoading ? (
-              <Loader className="animate-spin mx-auto text-sm" />
-            ) : categoryError ? (
-              <p className="text-red-500">Failed to load categories.</p>
-            ) : (
-              <Select
-                name="categoryId"
-                value={productDetails.categoryId}
-                onValueChange={(value) =>
-                  setProductDetails({ ...productDetails, categoryId: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            {formErrors.categoryId && (
-              <p className="text-red-500 text-sm mt-1">
-                {formErrors.categoryId}
-              </p>
-            )}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Discount (%)
+          </label>
+          <Input
+            type="number"
+            name="discountPercent"
+            value={productDetails.discountPercent || ""}
+            onChange={handleChange}
+            placeholder="Enter discount percent"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Feature this Product
+          </label>
+          <div className="flex items-center justify-start w-full space-x-2">
+            <Input
+              type="checkbox"
+              name="isFeatured"
+              className="w-6 rounded-full"
+              checked={productDetails.isFeatured || false}
+              onChange={(e) =>
+                setProductDetails((prev) => ({
+                  ...prev,
+                  isFeatured: e.target.checked,
+                }))
+              }
+            />
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Mark this product as featured.
+            </span>
           </div>
-          {mode === "edit" && (
-            <>
-              <div>
-                <label
-                  htmlFor="status"
-                  className=" text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Status
-                </label>
-                <Select
-                  name="status"
-                  value={productDetails.status}
-                  onValueChange={(value) =>
-                    setProductDetails({ ...productDetails, status: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="out_of_stock">Out of Stock</SelectItem>
-                    <SelectItem value="discontinued">Discontinued</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
+        </div>
+
+        {discountedPrice !== null && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Discounted Price
+            </label>
+            <p className="text-lg font-semibold">
+              {discountedPrice.toFixed(2)}
+            </p>
+          </div>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Category
+          </label>
+          {isLoading ? (
+            <Loader className="animate-spin mx-auto text-sm" />
+          ) : categoryError ? (
+            <p className="text-red-500">Failed to load categories.</p>
+          ) : (
+            <Select
+              name="categoryId"
+              value={productDetails.categoryId}
+              onValueChange={(value) =>
+                setProductDetails((prev) => ({ ...prev, categoryId: value }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {formErrors.categoryId && (
+            <p className="text-red-500 text-sm mt-1">{formErrors.categoryId}</p>
           )}
         </div>
 
+        {mode === "edit" && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Status
+            </label>
+            <Select
+              name="status"
+              value={productDetails.status}
+              onValueChange={(value) =>
+                setProductDetails((prev) => ({ ...prev, status: value }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="out_of_stock">Out of Stock</SelectItem>
+                <SelectItem value="discontinued">Discontinued</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         <Button disabled={isPending} size="lg" type="submit">
           {isPending ? (
-            <Loader className="animate-spin" />
+            <Loader className="animate-spin mx-auto text-sm" />
           ) : mode === "create" ? (
-            "Create"
+            "Create Product"
           ) : (
-            "Update"
+            "Update Product"
           )}
         </Button>
       </form>

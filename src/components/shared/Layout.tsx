@@ -10,7 +10,7 @@ const Layout = () => {
         <nav className=" sticky top-1 inset-x-0    z-30 backdrop-blur-lg border-b-2 border-muted-secondary  rounded-l-lg    p-1  w-full ">
           <SidebarTrigger />
         </nav>
-        <div className="p-2 px-3 lg:p-3">
+        <div className="p-2 px-3  lg:p-3">
           <Outlet />
         </div>
       </main>
