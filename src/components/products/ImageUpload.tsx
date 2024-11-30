@@ -53,7 +53,7 @@ const ImageUpload = ({ onImagesChange, initialImages }: ImageUploadProps) => {
     const updatedImages = selectedImages.filter((_, i) => i !== index);
 
     setSelectedImages(updatedImages);
-    onImagesChange(selectedImages);
+    onImagesChange(updatedImages);
 
     try {
       const { data } = await AxiosBase.post("/api/image/destroy", {
