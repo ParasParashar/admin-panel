@@ -6,7 +6,7 @@ const Layout = () => {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main className="w-full  flex flex-col bg-secondary">
+      <main className="flex flex-col bg-secondary">
         <nav className=" sticky top-1 inset-x-0    z-30 backdrop-blur-lg border-b-2 border-muted-secondary  rounded-l-lg    p-1  w-full ">
           <SidebarTrigger />
         </nav>
