@@ -12,7 +12,7 @@ import {
 } from "react-icons/md";
 
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import AxiosBase from "@/lib/axios";
@@ -49,7 +49,6 @@ const ProductPage = () => {
   const handleClick = (id: string) => {
     naviage("/edit/" + id);
   };
-
   return (
     <div className="space-y-8 w-full">
       <section className="flex justify-between items-center">
@@ -100,10 +99,12 @@ const ProductPage = () => {
                 <TableHead>S.No</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Price</TableHead>
+                <TableHead>Discount%</TableHead>
                 <TableHead>Stock</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Live</TableHead>
+                <TableHead>Featured</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -116,6 +117,16 @@ const ProductPage = () => {
                   <TableCell className="text-xs">{index + 1}</TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>&#8377;{product.price}</TableCell>
+                  <TableCell>
+                    {product.discountedPrice && (
+                      <div>
+                        &#8377;{product?.discountedPrice}
+                        <span className="text-xs  text-muted-foreground">
+                          or {product?.discountPercent}%
+                        </span>
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell>{product.totalQuantity}</TableCell>
                   <TableCell>{product.category.name}</TableCell>
                   <TableCell>
@@ -128,6 +139,11 @@ const ProductPage = () => {
                       <MdOutlinePublishedWithChanges size={20} color="blue" />
                     ) : (
                       <MdOutlineUnpublished size={20} color="gray" />
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {product.isFeatured === true && (
+                      <Star color="#245fd4ce" className="w-5 h-5" />
                     )}
                   </TableCell>
                 </TableRow>
