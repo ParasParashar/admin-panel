@@ -82,8 +82,8 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
         mode === "create"
           ? "/api/admin/product/create"
           : `/api/admin/product/update/${defaultData?.id}`;
-      const formData = { ...productDetails, discountedPrice };
-      const { data } = await AxiosBase.post(endpoint, formData);
+      // const formData = { ...productDetails };
+      const { data } = await AxiosBase.post(endpoint, productDetails);
       if (!data.success) throw new Error(data.message);
       return data;
     },

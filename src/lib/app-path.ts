@@ -11,14 +11,15 @@ export const items = [
         url: "/",
         icon: BsBarChartLine,
     },
-    {
-        title: "Category",
-        url: "/category",
-        icon: TbCategoryPlus,
-    },
+
     {
         title: "Products",
         url: "/product",
         icon: Settings,
+    },
+    {
+        title: "Category",
+        url: "/category",
+        icon: TbCategoryPlus,
     },
 ];

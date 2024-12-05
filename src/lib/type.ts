@@ -19,7 +19,6 @@ export type Product = {
     isDeleted: boolean; // Indicates if the product is deleted
     isPublished: boolean; // Indicates if the product is published
     variants: Variant[]; // Variants of the product
-    discountedPrice?: number;
     discountPercent?: string;
     isFeatured?: boolean;
     // Relations

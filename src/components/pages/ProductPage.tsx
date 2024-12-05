@@ -118,9 +118,11 @@ const ProductPage = () => {
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>&#8377;{product.price}</TableCell>
                   <TableCell>
-                    {product.discountedPrice && (
+                    {product.discountPercent && (
                       <div>
-                        &#8377;{product?.discountedPrice}
+                        &#8377;
+                        {((product.discountPercent as any) / 100) *
+                          product.price}
                         <span className="text-xs  text-muted-foreground">
                           or {product?.discountPercent}%
                         </span>
