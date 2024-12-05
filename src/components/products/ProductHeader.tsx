@@ -74,6 +74,12 @@ export function ProductHeader({
     e.preventDefault();
     publishProduct();
   };
+  const handleDelete = () => {
+    if (isPublished) {
+      return toast.error("First Unpublish Product to delete ");
+    }
+    deleteProduct();
+  };
 
   const isPublishProduct = variantLength > 0;
   return (
@@ -104,7 +110,7 @@ export function ProductHeader({
         {/* Delete Button */}
         <ConfirmModel
           message="You can also recover product from the trash. If you deleted mistakely."
-          onConfirm={deleteProduct}
+          onConfirm={handleDelete}
         >
           <Button
             className="ml-auto  hover:scale-110 transition-all ease-in duration-300"
