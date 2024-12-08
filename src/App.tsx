@@ -11,8 +11,10 @@ import ProductPage from "./components/pages/ProductPage";
 import CreateProductPage from "./components/pages/CreateProductPage";
 import EditProductPage from "./components/pages/EditProductPage";
 import CreateVariantPage from "./components/pages/CreateVariantPage";
+import useDynamicTitle from "./hooks/useDynamicTitle";
 
 function App() {
+  useDynamicTitle();
   const { data: authUser, isLoading } = useQuery<Seller>({
     queryKey: ["authUser"],
     queryFn: async () => {
