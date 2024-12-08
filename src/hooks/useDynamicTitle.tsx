@@ -6,7 +6,6 @@ const useDynamicTitle = () => {
 
   useEffect(() => {
     const path = location.pathname;
-    console.log(path);
     const title =
       path === "/"
         ? "Dashboard - Store Admin"
