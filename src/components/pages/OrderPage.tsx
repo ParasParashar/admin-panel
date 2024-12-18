@@ -9,7 +9,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import AxiosBase from "@/lib/axios";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
 import { Link, useNavigate } from "react-router-dom";
