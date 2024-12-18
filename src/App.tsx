@@ -12,6 +12,7 @@ import CreateProductPage from "./components/pages/CreateProductPage";
 import EditProductPage from "./components/pages/EditProductPage";
 import CreateVariantPage from "./components/pages/CreateVariantPage";
 import useDynamicTitle from "./hooks/useDynamicTitle";
+import OrderPage from "./components/pages/OrderPage";
 
 function App() {
   useDynamicTitle();
@@ -63,6 +64,10 @@ function App() {
         <Route
           path="/edit/:id"
           element={authUser ? <EditProductPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/edit/:id"
+          element={authUser ? <OrderPage /> : <Navigate to="/login" />}
         />
       </Route>
     </Routes>
