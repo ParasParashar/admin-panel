@@ -232,11 +232,10 @@ const ProductVariant = ({ defaultVariants = [], mode }: Props) => {
               size={"icon"}
               variant={"ghost"}
               type="button"
-              disabled={variantIndex === 0}
+              disabled={variants.length === 1}
               onClick={() => deleteVariant(variantIndex)}
               className={cn(
-                "absolute top-2 right-2 rounded-full text-red-500 hover:text-red-700",
-                variantIndex === 0 && "hidden"
+                "absolute top-2 right-2 rounded-full text-red-500 hover:text-red-700"
               )}
             >
               <RxCross2 size={15} color="red" />
@@ -350,6 +349,7 @@ const ProductVariant = ({ defaultVariants = [], mode }: Props) => {
 
         <div className="space-y-4">
           <Button
+            disabled={isPending}
             variant={"outline"}
             type="button"
             onClick={addVariant}
@@ -358,7 +358,7 @@ const ProductVariant = ({ defaultVariants = [], mode }: Props) => {
             <Plus className="mr-2 h-4 w-4" />
             Add Variant
           </Button>
-          <Button type="submit" className="w-full">
+          <Button disabled={isPending} type="submit" className="w-full">
             {isPending ? (
               <Loader className="animate-spin" />
             ) : mode === "create" ? (

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { RxCross1 } from "react-icons/rx";
 import { CiImageOn } from "react-icons/ci";
@@ -22,7 +22,12 @@ const ImageUpload = ({ onImagesChange, initialImages }: ImageUploadProps) => {
   const [img, setImg] = useState<string | ArrayBuffer | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleImgChange = async (e) => {
+  useEffect(() => {
+    setSelectedImages(initialImages);
+  }, [initialImages]);
+
+  const handleImgChange = async (e: any) => {
+    e.preventDefault();
     const file = e.target.files[0];
     setLoading(true);
     if (file) {
@@ -47,7 +52,9 @@ const ImageUpload = ({ onImagesChange, initialImages }: ImageUploadProps) => {
       reader.readAsDataURL(file);
     }
   };
-  const handleRemoveImage = async (index: number) => {
+  const handleRemoveImage = async (e: React.MouseEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
     const imageToRemove = selectedImages[index];
     setLoading(true);
     const updatedImages = selectedImages.filter((_, i) => i !== index);
@@ -142,7 +149,7 @@ const ImageUpload = ({ onImagesChange, initialImages }: ImageUploadProps) => {
               <Button
                 size={"icon"}
                 variant={"ghost"}
-                onClick={() => handleRemoveImage(index)}
+                onClick={(e) => handleRemoveImage(e, index)}
                 className="absolute top-[-10px] border-2 right-[-10px] text-white border-none group-hover:bg-red-400 ring-0 rounded-full hover:bg-red-400"
               >
                 <RxCross1 size={20} />

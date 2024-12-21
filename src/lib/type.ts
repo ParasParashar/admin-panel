@@ -21,6 +21,7 @@ export type Product = {
     variants: Variant[]; // Variants of the product
     discountPercent?: string;
     isFeatured?: boolean;
+    slug?: string;
     // Relations
     categoryId: string; // Category the product belongs to
     category: Category; // Related category object

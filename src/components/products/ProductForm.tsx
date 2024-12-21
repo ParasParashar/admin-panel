@@ -102,7 +102,9 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
           status: "",
           discountPercent: 0,
         });
-        navigate(`/create/${data.data.id}`);
+        navigate(`/create/${data.data.slug}`);
+      } else {
+        navigate(`/edit/${data.data.slug}`);
       }
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },

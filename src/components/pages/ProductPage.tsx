@@ -110,7 +110,7 @@ const ProductPage = () => {
             <TableBody>
               {products.map((product: Product, index: number) => (
                 <TableRow
-                  onClick={() => handleClick(product.id)}
+                  onClick={() => handleClick(product.slug!)}
                   key={product.id}
                   className="cursor-pointer"
                 >

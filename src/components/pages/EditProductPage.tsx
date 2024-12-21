@@ -8,6 +8,7 @@ import {
 } from "../loaders/PageTableSkeleton";
 import { ProductHeader } from "../products/ProductHeader";
 import { Variant } from "@/lib/type";
+import { MdError } from "react-icons/md";
 
 const EditProductPage = () => {
   const { id: productId } = useParams();
@@ -31,6 +32,14 @@ const EditProductPage = () => {
       <div className="p-1 lg:p-6 gap-3 flex flex-col">
         <ProductCreationSkeleton />
         <ProductVariantSkeleton />
+      </div>
+    );
+  }
+  if (!product && !isLoading) {
+    return (
+      <div className="p-5 w-full mt-20  text-muted-foreground flex items-center gap-3 flex-col justify-center">
+        <p className="text-xl text-muted-foreground">Product Not found</p>
+        <MdError size={20} />
       </div>
     );
   }
