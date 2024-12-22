@@ -21,7 +21,7 @@ function App() {
     queryKey: ["authUser"],
     queryFn: async () => {
       try {
-        const res = await AxiosBase("/auth/me");
+        const res = await AxiosBase("/api/admin/user/me");
         if (res.data.error) return null;
         return res.data;
       } catch (error: any) {
