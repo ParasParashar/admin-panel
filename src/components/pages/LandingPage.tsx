@@ -5,7 +5,9 @@ import { FcGoogle } from "react-icons/fc";
 
 const LandingPage = () => {
   const handleGoogleSignIn = () => {
-    window.location.href = `http://localhost:4000/auth/google`;
+    window.location.href = `${
+      import.meta.env.VITE_API_BACKEND_URL
+    }/auth/google`;
   };
 
   return (
