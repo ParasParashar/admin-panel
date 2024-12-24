@@ -7,7 +7,7 @@ const LandingPage = () => {
   const handleGoogleSignIn = () => {
     window.location.href = `${
       import.meta.env.VITE_API_BACKEND_URL
-    }/auth/google`;
+    }/auth/google/seller`;
   };
 
   return (
