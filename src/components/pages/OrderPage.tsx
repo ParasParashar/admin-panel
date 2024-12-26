@@ -1,58 +1,62 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AxiosBase from "@/lib/axios";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { formatDate } from "@/lib/utils";
-import { Link, useNavigate } from "react-router-dom";
 import { FaLeftLong, FaRightLong } from "react-icons/fa6";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatDate } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+
+// Fetch Orders Function
+const fetchOrders = async ({ page, size }) => {
+  const { data } = await AxiosBase.get("/api/admin/orders", {
+    params: { page, size },
+  });
+  return data.data;
+};
 
 const OrderPage = () => {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [size, setSize] = useState(10);
-  const [totalPages, setTotalPages] = useState(0);
+  const pageSize = 10; // Fixed page size for simplicity
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch orders with pagination
-  const fetchOrders = async () => {
-    try {
-      setIsLoading(true);
-      const { data } = await AxiosBase.get("/api/admin/orders", {
-        params: { page, size },
-      });
-      if (!data.success) throw new Error();
-      setOrders(data.data);
-      setTotalPages(data.pagination.totalPages || 0);
-    } catch (error) {
-      console.error(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Updated query call following v5 API
+  const {
+    data: ordersData,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["orders", currentPage],
+    queryFn: () => fetchOrders({ page: currentPage, size: pageSize }),
+  });
 
   const handlePageChange = (newPage) => {
-    setPage(newPage);
+    setCurrentPage(newPage);
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, [page, size]);
+  if (isLoading) {
+    return (
+      <main className="h-full">
+        <h2 className="text-primary bg-secondary font-semibold text-xl mb-2 text-center py-1 rounded-sm">
+          Loading Orders...
+        </h2>
+        {[...Array(4)].map((_, idx) => (
+          <Skeleton key={idx} className="h-10 my-2 rounded-lg w-full" />
+        ))}
+      </main>
+    );
+  }
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchOrders();
-    }, 10000);
-    return () => clearInterval(interval);
-  }, []);
+  if (isError) {
+    return (
+      <main className="h-full">
+        <p className="text-center text-2xl font-bold">
+          An error occurred while fetching orders.
+        </p>
+      </main>
+    );
+  }
+  console.log(ordersData);
 
   return (
     <main className="h-full">
@@ -60,82 +64,73 @@ const OrderPage = () => {
         All Orders
       </h2>
 
-      {isLoading &&
-        [...Array(4)].map((_, idx) => (
-          <Skeleton key={idx} className="h-10 my-2 rounded-lg w-full" />
-        ))}
-
-      {!isLoading && orders.length === 0 && (
-        <p className="text-center text-2xl font-bold">
-          Currently, there are no orders.
-        </p>
-      )}
-
-      {orders.length > 0 && !isLoading && (
+      {ordersData.orders?.length > 0 ? (
         <>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>S.No</TableHead>
-                <TableHead>Customer Name</TableHead>
-                <TableHead>Total Amount</TableHead>
-                <TableHead>Payment Type</TableHead>
-                <TableHead>Payment Status</TableHead>
-                <TableHead>Delivery Status</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order, index) => {
-                const newdate = formatDate(order.createdAt);
+          <table className="min-w-full">
+            <thead>
+              <tr>
+                <th className="py-2 px-4">S.No</th>
+                <th className="py-2 px-4">Customer Name</th>
+                <th className="py-2 px-4">Total Amount</th>
+                <th className="py-2 px-4">Payment Type</th>
+                <th className="py-2 px-4">Payment Status</th>
+                <th className="py-2 px-4">Delivery Status</th>
+                <th className="py-2 px-4">Date</th>
+                <th className="py-2 px-4">Order Items</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ordersData?.orders.map((order, index) => (
+                <tr
+                  key={order.id}
+                  className="cursor-pointer"
+                  onClick={() => navigate(`/admin/orders/${order.id}`)}
+                >
+                  <td className="py-2 px-4">
+                    {(currentPage - 1) * pageSize + index + 1}
+                  </td>
+                  <td className="py-2 px-4">{order.userId || "N/A"}</td>
+                  <td className="py-2 px-4">₹{order.totalAmount}</td>
+                  <td className="py-2 px-4">{order.paymentMethod}</td>
+                  <td className="py-2 px-4">{order.status}</td>
+                  <td className="py-2 px-4">{order.deliveryStatus}</td>
+                  <td className="py-2 px-4">{formatDate(order.createdAt)}</td>
+                  <td className="py-2 px-4">
+                    {order.orderItems
+                      ?.map((item) => item.product.name)
+                      .join(", ")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-                return (
-                  <TableRow
-                    onClick={() => navigate(`/admin/orders/${order.id}`)}
-                    key={order.id}
-                  >
-                    <TableCell>{(page - 1) * size + index + 1}</TableCell>
-                    <TableCell className="underline ">
-                      <Link to={`/admin/orders/${order.id}`}>
-                        {order.user?.name || "N/A"}
-                      </Link>
-                    </TableCell>
-                    <TableCell>&#8377;{order.totalAmount.toFixed(2)}</TableCell>
-                    <TableCell>{order.paymentMethod}</TableCell>
-                    <TableCell>{order.status}</TableCell>
-                    <TableCell>{order.deliveryStatus}</TableCell>
-                    <TableCell>{newdate}</TableCell>
-                    <TableCell className="underline text-blue-500 cursor-pointer">
-                      more info
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-
-          <div className="flex space-x-5 justify-between items-center mt-4">
+          <div className="flex justify-between items-center mt-4">
             <Button
               size="sm"
-              disabled={page === 1}
-              onClick={() => handlePageChange(page - 1)}
+              disabled={currentPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
             >
               <FaLeftLong />
               Previous
             </Button>
             <p>
-              Page {page} of {totalPages}
+              Page {currentPage} of {ordersData?.pagination?.totalPages}
             </p>
             <Button
               size="sm"
-              disabled={page === totalPages}
-              onClick={() => handlePageChange(page + 1)}
+              disabled={currentPage === ordersData?.pagination?.totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
             >
               Next
               <FaRightLong />
             </Button>
           </div>
         </>
+      ) : (
+        <p className="text-center text-2xl font-bold">
+          Currently, there are no orders.
+        </p>
       )}
     </main>
   );

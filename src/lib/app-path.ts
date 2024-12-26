@@ -1,5 +1,5 @@
 // Menu items.
-import { Settings } from "lucide-react";
+import { LucideClipboardPen, Settings } from "lucide-react";
 import { TbCategoryPlus } from "react-icons/tb";
 import { BsBarChartLine } from "react-icons/bs";
 
@@ -21,5 +21,10 @@ export const items = [
         title: "Category",
         url: "/category",
         icon: TbCategoryPlus,
+    },
+    {
+        title: "Orders",
+        url: "/orders",
+        icon: LucideClipboardPen,
     },
 ];
