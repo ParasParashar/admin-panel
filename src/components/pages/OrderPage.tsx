@@ -7,8 +7,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { OrderItem } from "@/lib/type";
+
 // Fetch Orders Function
-const fetchOrders = async ({ page, size }) => {
+const fetchOrders = async ({ page, size }: { page: number; size: number }) => {
   const { data } = await AxiosBase.get("/api/admin/orders", {
     params: { page, size },
   });
@@ -17,7 +27,7 @@ const fetchOrders = async ({ page, size }) => {
 
 const OrderPage = () => {
   const navigate = useNavigate();
-  const pageSize = 10; // Fixed page size for simplicity
+  const pageSize = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
   // Updated query call following v5 API
@@ -30,7 +40,7 @@ const OrderPage = () => {
     queryFn: () => fetchOrders({ page: currentPage, size: pageSize }),
   });
 
-  const handlePageChange = (newPage) => {
+  const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
 
@@ -56,7 +66,6 @@ const OrderPage = () => {
       </main>
     );
   }
-  console.log(ordersData);
 
   return (
     <main className="h-full">
@@ -66,44 +75,43 @@ const OrderPage = () => {
 
       {ordersData.orders?.length > 0 ? (
         <>
-          <table className="min-w-full">
-            <thead>
-              <tr>
-                <th className="py-2 px-4">S.No</th>
-                <th className="py-2 px-4">Customer Name</th>
-                <th className="py-2 px-4">Total Amount</th>
-                <th className="py-2 px-4">Payment Type</th>
-                <th className="py-2 px-4">Payment Status</th>
-                <th className="py-2 px-4">Delivery Status</th>
-                <th className="py-2 px-4">Date</th>
-                <th className="py-2 px-4">Order Items</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ordersData?.orders.map((order, index) => (
-                <tr
-                  key={order.id}
-                  className="cursor-pointer"
-                  onClick={() => navigate(`/admin/orders/${order.id}`)}
-                >
-                  <td className="py-2 px-4">
-                    {(currentPage - 1) * pageSize + index + 1}
-                  </td>
-                  <td className="py-2 px-4">{order.userId || "N/A"}</td>
-                  <td className="py-2 px-4">₹{order.totalAmount}</td>
-                  <td className="py-2 px-4">{order.paymentMethod}</td>
-                  <td className="py-2 px-4">{order.status}</td>
-                  <td className="py-2 px-4">{order.deliveryStatus}</td>
-                  <td className="py-2 px-4">{formatDate(order.createdAt)}</td>
-                  <td className="py-2 px-4">
-                    {order.orderItems
-                      ?.map((item) => item.product.name)
-                      .join(", ")}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>S.No</TableHead>
+                <TableHead>Customer Name</TableHead>
+                <TableHead>Total Amount</TableHead>
+                <TableHead>Payment Type</TableHead>
+                <TableHead>Payment Status</TableHead>
+                <TableHead>Delivery Status</TableHead>
+                <TableHead>Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {ordersData?.orders.map((order: OrderItem, index) => {
+                return (
+                  <TableRow
+                    onClick={() => navigate(`/orders/${order.id}`)}
+                    key={order.id}
+                    className="cursor-pointer"
+                  >
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell className="underline ">
+                      {order.order.user?.name || "N/A"}
+                    </TableCell>
+                    <TableCell>&#8377;{order.order.totalAmount}</TableCell>
+                    <TableCell>{order.order.paymentMethod}</TableCell>
+                    <TableCell>{order.order.status}</TableCell>
+                    <TableCell>{order.order.deliveryStatus}</TableCell>
+                    <TableCell>{formatDate(order.order.createdAt)}</TableCell>
+                    <TableCell className="underline text-blue-500 cursor-pointer">
+                      more info
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
 
           <div className="flex justify-between items-center mt-4">
             <Button
