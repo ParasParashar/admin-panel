@@ -13,10 +13,14 @@ import EditProductPage from "./components/pages/EditProductPage";
 import CreateVariantPage from "./components/pages/CreateVariantPage";
 import useDynamicTitle from "./hooks/useDynamicTitle";
 import OrderPage from "./components/pages/OrderPage";
-import OrderDetailsPage from "./components/pages/OrderDetailPage";
+import { lazy, Suspense } from "react";
+import { OrderDetailsSkeleton } from "./components/loaders/OrderSkeleton";
 
 function App() {
   useDynamicTitle();
+  const OrderDetailsPage = lazy(
+    () => import("./components/pages/OrderDetailPage")
+  );
   const { data: authUser, isLoading } = useQuery<Seller>({
     queryKey: ["authUser"],
     queryFn: async () => {
@@ -72,7 +76,15 @@ function App() {
         />
         <Route
           path="/orders/:id"
-          element={authUser ? <OrderDetailsPage /> : <Navigate to="/login" />}
+          element={
+            authUser ? (
+              <Suspense fallback={<OrderDetailsSkeleton />}>
+                <OrderDetailsPage />
+              </Suspense>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
       </Route>
     </Routes>

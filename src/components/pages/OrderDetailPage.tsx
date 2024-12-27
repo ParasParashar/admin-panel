@@ -1,4 +1,11 @@
-import React, { useEffect, useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   FaUser,
   FaShippingFast,
@@ -20,9 +27,13 @@ import {
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
 import { OrderDetailsSkeleton } from "../loaders/OrderSkeleton";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Order } from "@/lib/type";
+import ConfirmModel from "../shared/ConfirmModel";
+import { useState } from "react";
 
 // TODO: update soone for the order details badge of payment status
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ status }: { status: string }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case "PENDING":
@@ -53,44 +64,46 @@ const StatusBadge = ({ status }) => {
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
-  const [orderData, setOrderData] = useState(null);
-  const [orderStatus, setOrderStatus] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+  const [newStatus, setNewStatus] = useState("");
 
-  const fetchOrders = async () => {
-    try {
-      setIsLoading(true);
-      const { data } = await AxiosBase.get(`/api/admin/orders/${id}`);
-      if (!data.success) throw new Error();
-
-      setOrderData(data.data);
-      setOrderStatus(data.data.status);
-    } catch (error) {
-      console.error(error.message);
-    } finally {
-      setIsLoading(false);
-    }
+  const fetchOrderDetails = async (id: string) => {
+    const { data } = await AxiosBase.get(`/api/admin/orders/${id}`);
+    if (!data.success)
+      throw new Error(data.message || "Failed to fetch order.");
+    return data.data;
   };
 
-  const handleStatusChange = async (newStatus) => {
-    try {
-      setIsLoading(true);
-      const { data } = await AxiosBase.put(`/api/admin/order/update/${id}`, {
-        status: newStatus,
-        paymentMethod: orderData.paymentMethod,
-      });
-      if (!data.success)
-        throw new Error(data.message || "Failed to update status.");
+  const updateOrderStatus = async ({ status }: { status: string }) => {
+    const { data } = await AxiosBase.put(`/api/admin/order/update/${id}`, {
+      status,
+    });
+    if (!data.success)
+      throw new Error(data.message || "Failed to update status.");
+    return data;
+  };
 
+  const { data: orderData, isLoading } = useQuery<Order>({
+    queryKey: ["orderDetails", id],
+    queryFn: () => fetchOrderDetails(id),
+  });
+
+  const mutation = useMutation({
+    mutationFn: updateOrderStatus,
+    onSuccess: () => {
       toast.success("Status updated successfully");
-      fetchOrders();
-    } catch (error) {
-      console.error(error.message);
-      toast.error("Failed to update delivery status");
-    } finally {
-      setIsLoading(false);
-    }
+      queryClient.invalidateQueries({ queryKey: ["orderDetails", id] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update status");
+    },
+  });
+
+  const handleStatusChange = (s: string) => {
+    setNewStatus(s);
+    mutation.mutate({ status: newStatus });
   };
+  const handleDElivery = () => {};
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -107,10 +120,6 @@ const OrderDetailsPage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, [id]);
-
   if (isLoading) {
     return <OrderDetailsSkeleton />;
   }
@@ -120,7 +129,7 @@ const OrderDetailsPage = () => {
   }
 
   return (
-    <div className=" p-6 ">
+    <main className=" p-3 lg:p-6 w-full h-full ">
       {/* <div className="  overflow-hidden"> */}
       <section className="p-6 bg-gradient-to-r rounded-lg from-[#3e2723] to-[#8a574e]">
         <h1 className="text-3xl space-y-2 font-bold text-white">
@@ -187,8 +196,8 @@ const OrderDetailsPage = () => {
               </p>
               <p className="flex justify-start gap-3">
                 <span className="text-gray-600">Email:</span>
-                <span className="font-semibold">
-                  {orderData?.shippingAddress?.email}
+                <span className="font-semibold text-wrap   break-words break-all">
+                  {orderData?.user?.email}
                 </span>
               </p>
             </div>
@@ -214,7 +223,7 @@ const OrderDetailsPage = () => {
               </p>
               <p className="text-gray-800">
                 <span className="font-semibold">Phone:</span>{" "}
-                {orderData.shippingAddress.phonenumber}
+                {orderData.shippingAddress.phoneNumber}
               </p>
             </div>
           </div>
@@ -232,17 +241,23 @@ const OrderDetailsPage = () => {
             </p>
             <p className="text-sm text-muted-foreground mt-5">Update status</p>
             <div className="flex items-center justify-between space-x-4">
-              <span>{getStatusIcon(orderStatus)}</span>
+              <span>{getStatusIcon(orderData.status)}</span>
               <Select
                 value={orderData.deliveryStatus}
                 onValueChange={(value) => handleStatusChange(value)}
-                className="form-select block w-full mt-1  rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 "
               >
-                <SelectTrigger className="w-full bg-white">
-                  <SelectValue placeholder="update delivery status" />
-                </SelectTrigger>
+                <ConfirmModel
+                  onConfirm={handleDElivery}
+                  message="After this your delivery is changed and you have to deliver the product."
+                >
+                  <SelectTrigger className="w-full text-black bg-white">
+                    <SelectValue placeholder="update delivery status" />
+                  </SelectTrigger>
+                </ConfirmModel>
                 <SelectContent className="bg-secondary">
-                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem disabled={true} value="PENDING">
+                    Pending
+                  </SelectItem>
                   <SelectItem value="SHIPPED">Shipped</SelectItem>
                   <SelectItem value="OUT_FOR_DELIVERY">
                     Out of delivery
@@ -255,7 +270,7 @@ const OrderDetailsPage = () => {
         </div>
 
         {/* Order Items */}
-        <div className="mt-8">
+        {/* <div className="mt-8">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
             <FaBox className="mr-2 text-[#f7b232]" /> Order Items
           </h2>
@@ -306,6 +321,11 @@ const OrderDetailsPage = () => {
                             {item.product.name}
                           </div>
                         </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {item.variant.color}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -329,10 +349,56 @@ const OrderDetailsPage = () => {
               </tbody>
             </table>
           </div>
+        </div> */}
+        <div className="mt-8">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
+            <FaBox className="mr-2 text-[#f7b232]" /> Order Items
+          </h2>
+          <div className="bg-secondary rounded-lg shadow-md overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Image</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead>Size</TableHead>
+                  <TableHead>Color</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orderData.orderItems.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.product.name}</TableCell>
+                    <TableCell>
+                      <img
+                        className="h-16 w-16 rounded object-fill"
+                        src={item?.variant?.images[0]}
+                        alt={item.product.name}
+                      />
+                    </TableCell>
+                    <TableCell>{item.attribute?.stock}</TableCell>
+                    <TableCell>{item.attribute?.size}</TableCell>
+                    <TableCell className="">
+                      {item.variant?.color}
+                      <span
+                        className=" h-3 w-3 rounded-full"
+                        style={{ backgroundColor: item.variant?.color }}
+                      ></span>
+                    </TableCell>
+                    <TableCell>{item.quantity}</TableCell>
+                    <TableCell>₹{item.price}</TableCell>
+                    <TableCell>₹{item?.price * item.quantity}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </section>
-      {/* </div> */}
-    </div>
+    </main>
   );
 };
 

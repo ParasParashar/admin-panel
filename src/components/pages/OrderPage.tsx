@@ -91,7 +91,7 @@ const OrderPage = () => {
               {ordersData?.orders.map((order: OrderItem, index) => {
                 return (
                   <TableRow
-                    onClick={() => navigate(`/orders/${order.id}`)}
+                    onClick={() => navigate(`/orders/${order.order.id}`)}
                     key={order.id}
                     className="cursor-pointer"
                   >
