@@ -27,83 +27,52 @@ import {
 } from "@/components/ui/select";
 import toast from "react-hot-toast";
 import { OrderDetailsSkeleton } from "../loaders/OrderSkeleton";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Order } from "@/lib/type";
-import ConfirmModel from "../shared/ConfirmModel";
 import { useState } from "react";
-
-// TODO: update soone for the order details badge of payment status
-const StatusBadge = ({ status }: { status: string }) => {
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-800";
-      case "PROCESSING":
-        return "bg-blue-100 text-blue-800";
-      case "SHIPPED":
-        return "bg-indigo-100 text-indigo-800";
-      case "DELIVERED":
-        return "bg-green-100 text-green-800";
-      case "CANCELLED":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  return (
-    <span
-      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-        status
-      )}`}
-    >
-      {status}
-    </span>
-  );
-};
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
   const queryClient = useQueryClient();
-  const [newStatus, setNewStatus] = useState("");
-
-  const fetchOrderDetails = async (id: string) => {
-    const { data } = await AxiosBase.get(`/api/admin/orders/${id}`);
-    if (!data.success)
-      throw new Error(data.message || "Failed to fetch order.");
-    return data.data;
-  };
-
-  const updateOrderStatus = async ({ status }: { status: string }) => {
-    const { data } = await AxiosBase.put(`/api/admin/order/update/${id}`, {
-      status,
-    });
-    if (!data.success)
-      throw new Error(data.message || "Failed to update status.");
-    return data;
-  };
+  const [isPending, setIsPending] = useState(false);
 
   const { data: orderData, isLoading } = useQuery<Order>({
     queryKey: ["orderDetails", id],
-    queryFn: () => fetchOrderDetails(id),
+    queryFn: async () => {
+      const { data } = await AxiosBase.get(`/api/admin/orders/${id}`);
+      if (!data.success)
+        throw new Error(data.message || "Failed to fetch order.");
+      return data.data;
+    },
   });
 
-  const mutation = useMutation({
-    mutationFn: updateOrderStatus,
-    onSuccess: () => {
+  if (isLoading) {
+    return <OrderDetailsSkeleton />;
+  }
+
+  if (!orderData) {
+    return <div className="text-center py-8">Order not found.</div>;
+  }
+
+  const handleStatusChange = async (newStatus: string) => {
+    try {
+      setIsPending(true);
+      const { data } = await AxiosBase.put(`/api/admin/order/update/${id}`, {
+        status: newStatus,
+        paymentMethod: orderData.paymentMethod,
+      });
+      if (!data.success)
+        throw new Error(data.message || "Failed to update status.");
+
       toast.success("Status updated successfully");
       queryClient.invalidateQueries({ queryKey: ["orderDetails", id] });
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to update status");
-    },
-  });
-
-  const handleStatusChange = (s: string) => {
-    setNewStatus(s);
-    mutation.mutate({ status: newStatus });
+    } catch (error: any) {
+      console.error(error.message);
+      toast.error("Failed to update delivery status");
+    } finally {
+      setIsPending(false);
+    }
   };
-  const handleDElivery = () => {};
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -119,14 +88,6 @@ const OrderDetailsPage = () => {
         return <FaClock className="text-gray-500" />;
     }
   };
-
-  if (isLoading) {
-    return <OrderDetailsSkeleton />;
-  }
-
-  if (!orderData) {
-    return <div className="text-center py-8">Order not found.</div>;
-  }
 
   return (
     <main className=" p-3 lg:p-6 w-full h-full ">
@@ -243,17 +204,13 @@ const OrderDetailsPage = () => {
             <div className="flex items-center justify-between space-x-4">
               <span>{getStatusIcon(orderData.status)}</span>
               <Select
+                disabled={isPending}
                 value={orderData.deliveryStatus}
                 onValueChange={(value) => handleStatusChange(value)}
               >
-                <ConfirmModel
-                  onConfirm={handleDElivery}
-                  message="After this your delivery is changed and you have to deliver the product."
-                >
-                  <SelectTrigger className="w-full text-black bg-white">
-                    <SelectValue placeholder="update delivery status" />
-                  </SelectTrigger>
-                </ConfirmModel>
+                <SelectTrigger className="w-full text-black bg-white">
+                  <SelectValue placeholder="update delivery status" />
+                </SelectTrigger>
                 <SelectContent className="bg-secondary">
                   <SelectItem disabled={true} value="PENDING">
                     Pending
@@ -270,86 +227,7 @@ const OrderDetailsPage = () => {
         </div>
 
         {/* Order Items */}
-        {/* <div className="mt-8">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-            <FaBox className="mr-2 text-[#f7b232]" /> Order Items
-          </h2>
-          <div className="bg-secondary rounded-lg shadow-md overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-zinc-100">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Product
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Quantity
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Price
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Total
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-secondary divide-y divide-gray-200">
-                {orderData.orderItems.map((item, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <img
-                            className="h-10 w-10 rounded-full object-cover"
-                            src={item.product.imageUrl}
-                            alt={item.product.name}
-                          />
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {item.product.name}
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {item.variant.color}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {item.quantity}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {" "}
-                        ₹{item.price.toFixed(2)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        ₹{(item.quantity * item.price).toFixed(2)}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div> */}
+
         <div className="mt-8">
           <h2 className="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
             <FaBox className="mr-2 text-[#f7b232]" /> Order Items
@@ -369,8 +247,8 @@ const OrderDetailsPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orderData.orderItems.map((item) => (
-                  <TableRow key={item.id}>
+                {orderData.orderItems.map((item, index) => (
+                  <TableRow key={item.id + index}>
                     <TableCell>{item.product.name}</TableCell>
                     <TableCell>
                       <img
