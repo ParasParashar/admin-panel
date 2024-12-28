@@ -238,7 +238,7 @@ const OrderDetailsPage = () => {
                 <TableRow>
                   <TableHead>Product</TableHead>
                   <TableHead>Image</TableHead>
-                  <TableHead>Stock</TableHead>
+                  <TableHead>Current Stock</TableHead>
                   <TableHead>Size</TableHead>
                   <TableHead>Color</TableHead>
                   <TableHead>Quantity</TableHead>

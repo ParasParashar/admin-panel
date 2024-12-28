@@ -87,9 +87,27 @@ const ProductVariant = ({ defaultVariants = [], mode }: Props) => {
     ]);
   }, []);
 
-  const deleteVariant = useCallback((variantIndex: number) => {
-    setVariants((prev) => prev.filter((_, index) => index !== variantIndex));
-  }, []);
+  const deleteVariant = useCallback(
+    (variantIndex: number) => {
+      // Check if the variant has valid attributes (not empty)
+      const variant = variants[variantIndex];
+      const isBlankVariant =
+        !variant.color.trim() &&
+        variant.attributes.every((attr) => !attr.size.trim());
+
+      if (isBlankVariant) {
+        // Only allow deletion if the variant is blank
+        setVariants((prev) =>
+          prev.filter((_, index) => index !== variantIndex)
+        );
+      } else {
+        toast.error(
+          "You can't delete a variant that has already been created."
+        );
+      }
+    },
+    [variants]
+  );
 
   const addAttribute = useCallback((variantIndex: number) => {
     setVariants((prev) => {
@@ -105,12 +123,32 @@ const ProductVariant = ({ defaultVariants = [], mode }: Props) => {
 
   const deleteAttribute = useCallback(
     (variantIndex: number, attrIndex: number) => {
-      setVariants((prev) => {
-        const updatedVariants = [...prev];
-        updatedVariants[variantIndex].attributes.splice(attrIndex, 1);
-        return updatedVariants;
-      });
+      if (mode === "create") {
+        setVariants((prev) => {
+          const updatedVariants = [...prev];
+          updatedVariants[variantIndex].attributes.splice(attrIndex, 1);
+          return updatedVariants;
+        });
+      } else {
+        const variant = variants[variantIndex];
+        const isBlankVariant =
+          !variant.color.trim() &&
+          variant.attributes.every((attr) => !attr.size.trim());
+
+        if (isBlankVariant) {
+          setVariants((prev) => {
+            const updatedVariants = [...prev];
+            updatedVariants[variantIndex].attributes.splice(attrIndex, 1);
+            return updatedVariants;
+          });
+        } else {
+          toast.error(
+            "You can't delete a attribute that has already been created."
+          );
+        }
+      }
     },
+
     []
   );
 
@@ -232,7 +270,7 @@ const ProductVariant = ({ defaultVariants = [], mode }: Props) => {
               size={"icon"}
               variant={"ghost"}
               type="button"
-              disabled={variants.length === 1}
+              disabled={mode === "create" && variants.length === 1}
               onClick={() => deleteVariant(variantIndex)}
               className={cn(
                 "absolute top-2 right-2 rounded-full text-red-500 hover:text-red-700"
