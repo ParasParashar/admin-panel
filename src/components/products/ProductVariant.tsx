@@ -89,6 +89,12 @@ const ProductVariant = ({ defaultVariants = [], mode }: Props) => {
 
   const deleteVariant = useCallback(
     (variantIndex: number) => {
+      if (mode === "create") {
+        setVariants((prev) =>
+          prev.filter((_, index) => index !== variantIndex)
+        );
+        return;
+      }
       // Check if the variant has valid attributes (not empty)
       const variant = variants[variantIndex];
       const isBlankVariant =
