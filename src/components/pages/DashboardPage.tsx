@@ -7,6 +7,7 @@ import DashboardDetailsCard from "../dashboard/DashboardDetalCard";
 import DashboardProduct from "../dashboard/DashboardProduct";
 import Chart from "../dashboard/Chart";
 import PaymentTypePieChart from "../dashboard/PaymentTypePieChart";
+import { Order } from "@/lib/type";
 
 const DashboardPage = () => {
   const { data, isLoading } = useQuery({
@@ -18,14 +19,6 @@ const DashboardPage = () => {
   });
 
   const statistics = data || {};
-  const firstFiveOrders = statistics?.pendingOrders?.slice(0, 5) || [];
-
-  const paymentType = (paymentType: string, arrOfPaymentMethods: any[]) => {
-    const value = arrOfPaymentMethods.find(
-      (item) => item.paymentMethod === paymentType
-    );
-    return value?._count?.paymentMethod || 0;
-  };
 
   return (
     <>
@@ -42,7 +35,7 @@ const DashboardPage = () => {
               />
               <DashboardDetailsCard
                 title="Pending Orders"
-                value={statistics?.pendingOrders?.length}
+                value={statistics?.recentPendingOrders?.length}
               />
               <DashboardDetailsCard
                 title="All Products"
@@ -77,9 +70,9 @@ const DashboardPage = () => {
                   </Link>
                 </div>
                 <div className="flex lg:flex-col gap-2 overflow-x-scroll md:overflow-auto">
-                  {firstFiveOrders.length > 0 ? (
-                    firstFiveOrders.map((order, i) => (
-                      <DashboardProduct key={i} orderObj={order} />
+                  {data.recentPendingOrders.length > 0 ? (
+                    data.recentPendingOrders.map((order: Order) => (
+                      <DashboardProduct key={order.id} orderObj={order} />
                     ))
                   ) : (
                     <p className="text-center text-lg font-bold py-4">
