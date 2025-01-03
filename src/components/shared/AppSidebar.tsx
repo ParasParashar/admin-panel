@@ -29,8 +29,9 @@ export function AppSidebar() {
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       try {
-        const { data } = await AxiosBase.post("/auth/logout");
-        if (data.error) throw new Error(data.error);
+        const { data } = await AxiosBase.post("/api/admin/seller/logout");
+        if (!data.success) throw new Error(data.error);
+        navigate("/login");
         return data;
       } catch (error: any) {
         throw new Error(error.message);
