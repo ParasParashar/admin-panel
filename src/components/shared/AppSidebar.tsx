@@ -105,14 +105,14 @@ export function AppSidebar() {
           <SidebarFooter className="flex flex-col items-center justify-center  text-center">
             {/* User Info */}
             <SidebarMenuButton asChild>
-              <div className="flex items-center space-x-3 mb-3">
+              <Link to={"/seller"} className="flex items-center space-x-3 mb-3">
                 <FaUserCircle className="w-16 h-16 text-gray-700" />
                 <span className="flex flex-col items-end">
                   <p className="text-lg font-semibold text-gray-800">
                     {authUser?.name || "User Name"}
                   </p>
                 </span>
-              </div>
+              </Link>
             </SidebarMenuButton>
 
             {/* Logout Button */}

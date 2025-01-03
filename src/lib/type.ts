@@ -1,34 +1,33 @@
 export type Seller = {
-    id: string; // MongoDB ObjectId
+    id: string;
     name: string;
     email: string;
-    contact?: string | null; // Optional contact info
-    googleId: string; // Unique Google ID
-    products: Product[]; // List of products sold by this seller
+    contact?: string | null;
+    googleId: string;
+    products: Product[];
+    shiprocketEmail?: string
+    shiprocketPassword?: string
 };
 
 
 export type Product = {
-    id: string; // MongoDB ObjectId
+    id: string;
     name: string;
-    description?: string | null; // Optional description
-    price: number; // Product price
-    totalQuantity: number; // Available quantity, default is 0
-    status: ProductStatus; // Enum for status: active, inactive, etc.
-    images: string[]; // Array of image URLs
-    isDeleted: boolean; // Indicates if the product is deleted
-    isPublished: boolean; // Indicates if the product is published
-    variants: Variant[]; // Variants of the product
+    description?: string | null;
+    price: number;
+    totalQuantity: number;
+    status: ProductStatus;
+    images: string[];
+    isDeleted: boolean;
+    isPublished: boolean;
+    variants: Variant[];
     discountPercent?: string;
     isFeatured?: boolean;
     slug?: string;
-    // Relations
-    categoryId: string; // Category the product belongs to
-    category: Category; // Related category object
-    sellerId: string; // Seller who owns the product
-    seller: Seller; // Related seller object
-
-    // Timestamps
+    categoryId: string;
+    category: Category;
+    sellerId: string;
+    seller: Seller;
     createdAt: Date;
     updatedAt: Date;
 };

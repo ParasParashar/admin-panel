@@ -337,6 +337,7 @@ const ProductVariant = ({ defaultVariants = [], mode }: Props) => {
                   </label>
                   <input
                     name="size"
+                    autoCapitalize="words"
                     type="text"
                     value={attr.size}
                     onChange={(e) =>
