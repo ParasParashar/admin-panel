@@ -12,6 +12,7 @@ const SellerRegistrationForm = () => {
   const { data: sellerDetails } = useQuery<Seller>({
     queryKey: ["authUser"],
   });
+
   const [formData, setFormData] = useState({
     name: sellerDetails?.name || "",
     email: sellerDetails?.email || "",
@@ -24,24 +25,32 @@ const SellerRegistrationForm = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const { mutate: handleSubmit, isPending } = useMutation({
+  const {
+    mutate: handleSubmit,
+    isPending,
+    isError,
+    error,
+  } = useMutation({
     mutationFn: async (e: React.FormEvent) => {
-      try {
-        e.preventDefault();
-        const { data } = await AxiosBase.put(
-          "/api/admin/seller/register",
-          formData
-        );
-        if (!data.success) throw new Error(data.message);
-        return data;
-      } catch (error: any) {
-        console.error(error.message);
-        toast.error("Failed to create or update address");
-      }
+      e.preventDefault();
+      const { data } = await AxiosBase.put(
+        "/api/admin/seller/register",
+        formData
+      );
+      if (!data.success) throw new Error(data.message);
+      return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
       toast.success(data.message || "Created successfully");
+    },
+    onError: (error: any) => {
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred in registration.";
+      toast.error(message);
+      toast.error("Try again later");
     },
   });
 
@@ -73,7 +82,6 @@ const SellerRegistrationForm = () => {
             value={formData.name}
             onChange={handleChange}
             placeholder="Enter your full name"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             required
           />
         </div>
@@ -93,7 +101,6 @@ const SellerRegistrationForm = () => {
             value={formData.email}
             onChange={handleChange}
             placeholder="Enter your email address"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             required
             disabled
           />
@@ -114,7 +121,6 @@ const SellerRegistrationForm = () => {
             value={formData.shiprocketEmail}
             onChange={handleChange}
             placeholder="Enter your Shiprocket email"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             required
           />
         </div>
@@ -134,20 +140,27 @@ const SellerRegistrationForm = () => {
             value={formData.shiprocketPassword}
             onChange={handleChange}
             placeholder="Enter your Shiprocket password"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             required
           />
         </div>
 
+        {/* Display Error Message */}
+        {isError && (
+          <p className="text-red-600 mt-2">
+            {error?.response?.data?.message || error.message}
+          </p>
+        )}
+
         <div>
           <Button
+            size={"lg"}
+            className="w-full"
             disabled={
               isPending ||
               !formData.shiprocketPassword ||
               !formData.shiprocketEmail
             }
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             {sellerDetails ? "Update Details" : "Register as Seller"}
           </Button>
