@@ -13,7 +13,6 @@ import {
   FaClock,
   FaCheckCircle,
   FaTruck,
-  FaBan,
 } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import AxiosBase from "@/lib/axios";
@@ -28,7 +27,7 @@ import {
 import toast from "react-hot-toast";
 import { OrderDetailsSkeleton } from "../loaders/OrderSkeleton";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Order } from "@/lib/type";
+import { SubOrder } from "@/lib/type";
 import { useState } from "react";
 
 const OrderDetailsPage = () => {
@@ -36,7 +35,7 @@ const OrderDetailsPage = () => {
   const queryClient = useQueryClient();
   const [isPending, setIsPending] = useState(false);
 
-  const { data: orderData, isLoading } = useQuery<Order>({
+  const { data: orderData, isLoading } = useQuery<SubOrder>({
     queryKey: ["orderDetails", id],
     queryFn: async () => {
       const { data } = await AxiosBase.get(`/api/admin/orders/${id}`);
@@ -100,18 +99,18 @@ const OrderDetailsPage = () => {
           Order ID:
           <span className="text-blue-100 font-bold ml-2">#{orderData.id}</span>
         </p>
-        {orderData.paymentMethod === "ONLINE" && (
+        {orderData.parentOrder.paymentMethod === "ONLINE" && (
           <div className=" space-y-1">
             <p className="text-muted">
               Razorpay Payment id:
               <span className="text-blue-100 font-bold ml-2">
-                #{orderData.razorpayPaymentId}
+                #{orderData.parentOrder.razorpayPaymentId}
               </span>
             </p>
             <p className="text-muted">
               Razorpay Order id:
               <span className="text-blue-100 font-bold ml-2">
-                #{orderData.razorpayOrderId}
+                #{orderData.parentOrder.razorpayOrderId}
               </span>
             </p>
           </div>
@@ -134,12 +133,16 @@ const OrderDetailsPage = () => {
               </p>
               <p className="flex justify-between">
                 <span className="text-gray-600">Payment Method:</span>
-                <span className="font-semibold">{orderData.paymentMethod}</span>
+                <span className="font-semibold">
+                  {orderData.parentOrder.paymentMethod}
+                </span>
               </p>
               <p className="flex justify-between">
                 <span className="text-gray-600">Order Date:</span>
                 <span className="font-semibold">
-                  {new Date(orderData.createdAt).toLocaleDateString()}
+                  {new Date(
+                    orderData.parentOrder.createdAt
+                  ).toLocaleDateString()}
                 </span>
               </p>
             </div>
@@ -153,12 +156,14 @@ const OrderDetailsPage = () => {
             <div className="space-y-2">
               <p className="flex justify-start gap-3">
                 <span className="text-gray-600">Name:</span>
-                <span className="font-semibold">{orderData?.user?.name}</span>
+                <span className="font-semibold">
+                  {orderData?.parentOrder.user?.name}
+                </span>
               </p>
               <p className="flex justify-start gap-3">
                 <span className="text-gray-600">Email:</span>
                 <span className="font-semibold text-wrap   break-words break-all">
-                  {orderData?.user?.email}
+                  {orderData?.parentOrder.user?.email}
                 </span>
               </p>
             </div>
@@ -172,19 +177,19 @@ const OrderDetailsPage = () => {
             </h2>
             <div className="space-y-1">
               <p className="text-gray-800">
-                {orderData.shippingAddress.street}
+                {orderData.parentOrder.shippingAddress.street}
               </p>
               <p className="text-gray-800">
-                {orderData.shippingAddress.city},{" "}
-                {orderData.shippingAddress.state}{" "}
-                {orderData.shippingAddress.postalCode}
+                {orderData.parentOrder.shippingAddress.city},{" "}
+                {orderData.parentOrder.shippingAddress.state}{" "}
+                {orderData.parentOrder.shippingAddress.postalCode}
               </p>
               <p className="text-gray-800">
-                {orderData.shippingAddress.country}
+                {orderData.parentOrder.shippingAddress.country}
               </p>
               <p className="text-gray-800">
                 <span className="font-semibold">Phone:</span>{" "}
-                {orderData.shippingAddress.phoneNumber}
+                {orderData.parentOrder.shippingAddress.phoneNumber}
               </p>
             </div>
           </div>
@@ -202,7 +207,7 @@ const OrderDetailsPage = () => {
             </p>
             <p className="text-sm text-muted-foreground mt-5">Update status</p>
             <div className="flex items-center justify-between space-x-4">
-              <span>{getStatusIcon(orderData.status)}</span>
+              <span>{getStatusIcon(orderData.deliveryStatus)}</span>
               <Select
                 disabled={isPending}
                 value={orderData.deliveryStatus}

@@ -103,33 +103,51 @@ export type Address = {
 export type Order = {
     id: string;
     userId: string;
+    user: User;
     paymentMethod: PaymentMethod;
     razorpayOrderId?: string;
     razorpayPaymentId?: string;
-    status: OrderStatus;
+    status: PaymentStatus;
     totalAmount: number;
-    orderItems: OrderItem[];
     deliveryStatus: DeliveryStatus;
     shippingAddressId: string;
     shippingAddress: ShippingAddress;
-    createdAt: string;
-    updatedAt: string;
-}
+    createdAt: Date;
+    updatedAt: Date;
+    SubOrder: SubOrder[];
+};
 
-// OrderItem type
+export type SubOrder = {
+    id: string;
+    parentOrderId: string;
+    parentOrder: Order;
+    sellerId: string;
+    seller: Seller;
+    orderItems: OrderItem[];
+    totalAmount: number;
+    paymentMethod: PaymentMethod;
+    deliveryStatus: DeliveryStatus;
+    paymentStatus: PaymentStatus;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
 export type OrderItem = {
     id: string;
-    orderId: string;
     productId: string;
     product: Product;
+    variantId?: string;
+    variant?: Variant;
+    attributeId?: string;
+    attribute?: Attribute;
     quantity: number;
     price: number;
-    createdAt: string;
-    variant?: Variant;
-    attribute?: Attribute;
-    updatedAt: string;
-    order: Order
-}
+    createdAt: Date;
+    updatedAt: Date;
+    Delivery: Delivery[];
+    subOrderId: string;
+    SubOrder: SubOrder;
+};
 
 // ShippingAddress type
 export type ShippingAddress = {
@@ -146,6 +164,21 @@ export type ShippingAddress = {
 }
 
 
+export type Delivery = {
+    id: string;
+    orderItemId: string;
+    orderItem: OrderItem;
+    sellerId: string;
+    seller: Seller;
+    deliveryService: string;
+    trackingId?: string;
+    deliveryStatus: DeliveryStatus;
+    estimatedDelivery?: string;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+
 
 export enum PaymentMethod {
     COD = "COD",
@@ -157,7 +190,13 @@ export enum OrderStatus {
     PENDING = "PENDING",
     COMPLETED = "COMPLETED",
     CANCELLED = "CANCELLED",
-    PROCESSING = 'PROCESSING",
+    PROCESSING = 'PROCESSING'
+}
+export enum PaymentStatus {
+    PENDING = "PENDING",
+    COMPLETED = "COMPLETED",
+    FAILED = "FAILED",
+    PROCESSING = 'PROCESSING'
 }
 
 export enum DeliveryStatus {

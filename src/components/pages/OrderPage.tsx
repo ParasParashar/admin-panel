@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { OrderItem } from "@/lib/type";
+import { Order, OrderItem, SubOrder } from "@/lib/type";
 
 // Fetch Orders Function
 const fetchOrders = async ({ page, size }: { page: number; size: number }) => {
@@ -88,22 +88,22 @@ const OrderPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {ordersData?.orders.map((order: OrderItem, index) => {
+              {ordersData?.orders.map((order: SubOrder, index: number) => {
                 return (
                   <TableRow
-                    onClick={() => navigate(`/orders/${order.order.id}`)}
+                    onClick={() => navigate(`/orders/${order.id}`)}
                     key={order.id}
                     className="cursor-pointer"
                   >
                     <TableCell>{index + 1}</TableCell>
                     <TableCell className="underline ">
-                      {order.order.user?.name || "N/A"}
+                      {order.parentOrder.user?.name || "N/A"}
                     </TableCell>
-                    <TableCell>&#8377;{order.order.totalAmount}</TableCell>
-                    <TableCell>{order.order.paymentMethod}</TableCell>
-                    <TableCell>{order.order.status}</TableCell>
-                    <TableCell>{order.order.deliveryStatus}</TableCell>
-                    <TableCell>{formatDate(order.order.createdAt)}</TableCell>
+                    <TableCell>&#8377;{order.totalAmount}</TableCell>
+                    <TableCell>{order.paymentMethod}</TableCell>
+                    <TableCell>{order.parentOrder.status}</TableCell>
+                    <TableCell>{order.deliveryStatus}</TableCell>
+                    <TableCell>{formatDate(order.createdAt)}</TableCell>
                     <TableCell className="underline text-blue-500 cursor-pointer">
                       more info
                     </TableCell>
