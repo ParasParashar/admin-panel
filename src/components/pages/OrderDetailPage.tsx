@@ -18,42 +18,16 @@ import { useParams } from "react-router-dom";
 import AxiosBase from "@/lib/axios";
 import { FaRupeeSign } from "react-icons/fa";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import toast from "react-hot-toast";
 import { OrderDetailsSkeleton } from "../loaders/OrderSkeleton";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SubOrder } from "@/lib/type";
 import { useState } from "react";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import CreateDelivery from "../orders/CreateDelivery";
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
-  const [formData, setFormData] = useState({
-    location: "",
-    height: "",
-    weight: "",
-    width: "",
-    length: "",
-    postalCode: "",
-  });
 
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
   // const [isPending, setIsPending] = useState(false);
 
   const { data: orderData, isLoading } = useQuery<SubOrder>({
@@ -76,52 +50,35 @@ const OrderDetailsPage = () => {
 
   // create order
 
-  const {
-    mutate: updateDelivery,
-    isPending,
-    isError,
-    error,
-  } = useMutation({
-    mutationFn: async () => {
-      if (!formData) {
-        throw new Error("Please fill the all the data");
-      }
-      const response = await AxiosBase.post(
-        `/api/admin/delivery/trigger-delivery/${id}`,
-        {
-          packetDimensions: {
-            height: formData.height,
-            weight: formData.weight,
-            width: formData.width,
-            length: formData.length,
-          },
-          pickupLocation: {
-            name: formData.location,
-            postalCode: formData.postalCode,
-          },
-        }
-      );
-      if (!response.data.success) throw new Error(response.data.message);
-      return response.data;
-    },
-    onSuccess: () => {
-      toast.success("Delivery details updated successfully!");
-      queryClient.invalidateQueries({ queryKey: ["orderDetails", id] });
-    },
-    onError: (error) => {
-      toast.error(`Error: ${error.message}`);
-    },
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    updateDelivery();
-  };
+  // const updateDelivery = async () => {
+  //   try {
+  //     if (!formData) {
+  //       throw new Error("Please fill the all the data");
+  //     }
+  //     const response = await AxiosBase.post(
+  //       `/api/admin/delivery/trigger-delivery/${id}`,
+  //       {
+  //         packetDimensions: {
+  //           height: formData.height,
+  //           weight: formData.weight,
+  //           breath: formData.breath,
+  //           length: formData.length,
+  //         },
+  //         pickupLocation: {
+  //           name: formData.location,
+  //           postalCode: formData.postalCode,
+  //         },
+  //       }
+  //     );
+  //     if (!response.data.success) throw new Error(response.data.message);
+  //     toast.success("Delivery details updated successfully!");
+  //     queryClient.invalidateQueries({ queryKey: ["orderDetails", id] });
+  //     return response.data;
+  //   } catch (error) {
+  //     toast.error(`Error: ${error.message}`);
+  //     console.log("error: ${error.message}");
+  //   }
+  // };
 
   // const handleStatusChange = async (newStatus: string) => {
   //   try {
@@ -257,9 +214,11 @@ const OrderDetailsPage = () => {
               <p className="text-gray-800">
                 {orderData.parentOrder.shippingAddress.country}
               </p>
-              <p className="text-gray-800">
-                <span className="font-semibold">Phone:</span>{" "}
-                {orderData.parentOrder.shippingAddress.phoneNumber}
+              <p className="text-gray-800 space-x-3 flex items-center">
+                <span className="font-semibold">Phone:</span> +
+                {orderData.parentOrder.shippingAddress.phoneNumber.slice(0, 2)}
+                &nbsp;
+                {orderData.parentOrder.shippingAddress.phoneNumber.slice(2)}
               </p>
             </div>
           </div>
@@ -278,104 +237,7 @@ const OrderDetailsPage = () => {
             <p className="text-sm text-muted-foreground mt-5">Update status</p>
             <div className="flex items-center justify-between space-x-4">
               <span>{getStatusIcon(orderData.deliveryStatus)}</span>
-              <section>
-                <Dialog>
-                  <DialogTrigger>
-                    <Button>Dispatch Order</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Give order packaging details</DialogTitle>
-                      <DialogDescription>
-                        <form onSubmit={handleSubmit}>
-                          <div className="flex flex-col gap-3 mb-4">
-                            <label htmlFor="location">
-                              Enter product location name.
-                            </label>
-                            <Input
-                              name="location"
-                              placeholder="Enter location (e.g., Jaipur, Delhi)"
-                              value={formData.location}
-                              onChange={handleChange}
-                              required
-                            />
-                            <Input
-                              name="postalCode"
-                              placeholder="Enter postalcode (e.g., 3003003, 3434343)"
-                              value={formData.postalCode}
-                              onChange={handleChange}
-                              required
-                            />
-                          </div>
-                          <span>Enter order packaging dimension in cm.</span>
-                          <div className="grid grid-cols-2 gap-4 mt-4">
-                            <Input
-                              name="height"
-                              placeholder="Height"
-                              value={formData.height}
-                              onChange={handleChange}
-                              required
-                            />
-                            <Input
-                              name="weight"
-                              placeholder="Weight"
-                              value={formData.weight}
-                              onChange={handleChange}
-                              required
-                            />
-                            <Input
-                              name="width"
-                              placeholder="Width"
-                              value={formData.width}
-                              onChange={handleChange}
-                              required
-                            />
-                            <Input
-                              name="length"
-                              placeholder="Length"
-                              value={formData.length}
-                              onChange={handleChange}
-                              required
-                            />
-                          </div>
-                          <Button
-                            type="submit"
-                            className="mt-4"
-                            disabled={isPending}
-                          >
-                            {isPending ? "Submitting..." : "Create Delivery"}
-                          </Button>
-                        </form>
-                        {isError && (
-                          <p className="text-sm text-destructive">
-                            {error.message}
-                          </p>
-                        )}
-                      </DialogDescription>
-                    </DialogHeader>
-                  </DialogContent>
-                </Dialog>
-              </section>
-
-              {/* <Select
-                disabled={isPending}
-                value={orderData.deliveryStatus}
-                onValueChange={(value) => handleStatusChange(value)}
-              >
-                <SelectTrigger className="w-full text-black bg-white">
-                  <SelectValue placeholder="update delivery status" />
-                </SelectTrigger>
-                <SelectContent className="bg-secondary">
-                  <SelectItem disabled={true} value="PENDING">
-                    Pending
-                  </SelectItem>
-                  <SelectItem value="SHIPPED">Shipped</SelectItem>
-                  <SelectItem value="OUT_FOR_DELIVERY">
-                    Out of delivery
-                  </SelectItem>
-                  <SelectItem value="DELIVERED">Delivered</SelectItem>
-                </SelectContent>
-              </Select> */}
+              <CreateDelivery />
             </div>
           </div>
         </div>
