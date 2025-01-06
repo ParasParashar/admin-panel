@@ -13,8 +13,8 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
 import { useNavigate } from "react-router-dom";
+import ProductDescriptionEditor from "./ProductDescriptionEditor";
 
 interface ProductFormProps {
   mode: "create" | "edit";
@@ -68,6 +68,8 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
   const validateFields = () => {
     const errors: Record<string, string> = {};
     if (!productDetails.name.trim()) errors.name = "Product name is required.";
+    if (!productDetails.description.trim())
+      errors.name = "Product description is required.";
     if (productDetails.price <= 0)
       errors.price = "Price must be greater than zero.";
     if (!productDetails.categoryId)
@@ -165,14 +167,11 @@ const ProductForm = ({ mode, defaultData }: ProductFormProps) => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Description
-          </label>
-          <Textarea
-            name="description"
-            value={productDetails.description}
-            onChange={handleChange}
-            placeholder="Enter product description"
+          <ProductDescriptionEditor
+            prevDescriptor={productDetails.description}
+            onSelect={(d) =>
+              setProductDetails((prev) => ({ ...prev, description: d }))
+            }
           />
         </div>
 
