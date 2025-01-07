@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AxiosBase from "@/lib/axios";
 import { FaLeftLong, FaRightLong } from "react-icons/fa6";
