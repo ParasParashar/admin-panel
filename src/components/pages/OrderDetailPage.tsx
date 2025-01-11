@@ -23,12 +23,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SubOrder } from "@/lib/type";
 import { useState } from "react";
 import CreateDelivery from "../orders/CreateDelivery";
+import ShiprocketDeliveries from "../orders/ShipRocketDeliveries";
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
-
-  // const queryClient = useQueryClient();
-  // const [isPending, setIsPending] = useState(false);
 
   const { data: orderData, isLoading } = useQuery<SubOrder>({
     queryKey: ["orderDetails", id],
@@ -48,39 +46,6 @@ const OrderDetailsPage = () => {
     return <div className="text-center py-8">Order not found.</div>;
   }
 
-  // create order
-
-  // const updateDelivery = async () => {
-  //   try {
-  //     if (!formData) {
-  //       throw new Error("Please fill the all the data");
-  //     }
-  //     const response = await AxiosBase.post(
-  //       `/api/admin/delivery/trigger-delivery/${id}`,
-  //       {
-  //         packetDimensions: {
-  //           height: formData.height,
-  //           weight: formData.weight,
-  //           breath: formData.breath,
-  //           length: formData.length,
-  //         },
-  //         pickupLocation: {
-  //           name: formData.location,
-  //           postalCode: formData.postalCode,
-  //         },
-  //       }
-  //     );
-  //     if (!response.data.success) throw new Error(response.data.message);
-  //     toast.success("Delivery details updated successfully!");
-  //     queryClient.invalidateQueries({ queryKey: ["orderDetails", id] });
-  //     return response.data;
-  //   } catch (error) {
-  //     toast.error(`Error: ${error.message}`);
-  //     console.log("error: ${error.message}");
-  //   }
-  // };
-
-  // const handleStatusChange = async (newStatus: string) => {
   //   try {
   //     setIsPending(true);
   //     const { data } = await AxiosBase.put(`/api/admin/order/update/${id}`, {
@@ -228,19 +193,31 @@ const OrderDetailsPage = () => {
             <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-800">
               <FaClock className="mr-2 text-[#f7b232]" /> Order Status
             </h2>
-            <p className="text-sm text-muted-foreground">
-              Current Delivery Status:
-              <span className=" capitalize  ml-2 font-bold text-primary">
-                {orderData.deliveryStatus}
-              </span>
-            </p>
-            <p className="text-sm text-muted-foreground mt-5">Update status</p>
-            <div className="flex items-center justify-between space-x-4">
-              <span>{getStatusIcon(orderData.deliveryStatus)}</span>
-              <CreateDelivery />
-            </div>
+            {orderData.Delivery !== null ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Current Delivery Status:
+                  <span className=" capitalize  ml-2 font-bold text-primary">
+                    {orderData.deliveryStatus}
+                  </span>
+                </p>
+                <p className="text-muted-foreground text-lg  font-semibold  break-all  break-words">
+                  Ship product from the shiprocket or delete the delivery to
+                  create a new delivery.
+                </p>
+              </>
+            ) : (
+              <div className="flex items-center justify-between space-x-4 mt-5">
+                <span>{getStatusIcon(orderData.deliveryStatus)}</span>
+                <CreateDelivery />
+              </div>
+            )}
           </div>
         </div>
+        {/* shiprocket deliveries */}
+        {orderData.Delivery.length > 0 && orderData.Delivery && (
+          <ShiprocketDeliveries deliveries={orderData.Delivery} />
+        )}
 
         {/* Order Items */}
 

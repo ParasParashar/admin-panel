@@ -129,6 +129,7 @@ export type SubOrder = {
     deliveryStatus: DeliveryStatus;
     paymentStatus: PaymentStatus;
     createdAt: Date;
+    Delivery: Delivery[]
     updatedAt: Date;
 };
 
@@ -166,14 +167,16 @@ export type ShippingAddress = {
 
 export type Delivery = {
     id: string;
-    orderItemId: string;
-    orderItem: OrderItem;
+    subOrderId: string;
+    subOrder: SubOrder;
     sellerId: string;
     seller: Seller;
     deliveryService: string;
-    trackingId?: string;
-    deliveryStatus: DeliveryStatus;
-    estimatedDelivery?: string;
+    shipmentId: string;
+    ship_order_id: string;
+    channelOrderId: string;
+    deliveryStatus: string;
+    estimatedDelivery?: Date;
     createdAt: Date;
     updatedAt: Date;
 };
