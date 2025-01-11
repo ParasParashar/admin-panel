@@ -1,8 +1,42 @@
+import AxiosBase from "@/lib/axios";
 import { Delivery } from "@/lib/type";
 import { formatDate } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { Link, useParams } from "react-router-dom";
+import ConfirmModel from "../shared/ConfirmModel";
+import { Button } from "../ui/button";
+import { TbTrash } from "react-icons/tb";
+import { Loader } from "lucide-react";
 
 const ShiprocketDeliveries = ({ deliveries }: { deliveries?: Delivery[] }) => {
+  console.log(deliveries);
+  const { id } = useParams();
+  const queryClient = useQueryClient();
+  // Mutation for deleting a product
+  const { mutate: deleteProduct, isPending: deletePending } = useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await AxiosBase.delete(
+        `/api/admin/delivery/delete/${id}`
+      );
+      if (!data.success) throw new Error(data.message);
+      console.log(data);
+    },
+    onSuccess: () => {
+      toast.success("Delivery deleted permanently!");
+      queryClient.invalidateQueries({ queryKey: ["orderDetails", id] });
+    },
+    onError: () => {
+      toast.error("Failed to delete order delivery");
+    },
+  });
+
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    deleteProduct(id);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Ship order Deliveries</h1>
@@ -10,11 +44,27 @@ const ShiprocketDeliveries = ({ deliveries }: { deliveries?: Delivery[] }) => {
         {deliveries?.map((delivery) => (
           <div
             key={delivery.id}
-            className="border border-gray-300 rounded-lg shadow-md p-4 bg-white"
+            className="border relative border-gray-300 rounded-lg shadow-md p-4 bg-white"
           >
             <h2 className="text-lg font-semibold text-gray-800 mb-2">
               Shipment ID: {delivery.shipmentId}
             </h2>
+            <ConfirmModel
+              message="By doing this your delivery is also cancel from your deivery provider,And this action cannot be reversed."
+              onConfirm={(e) => handleDelete(e, delivery.id)}
+            >
+              <Button
+                size={"icon"}
+                className="rounded-full text-red-400 absolute top-2 right-2"
+                variant={"outline"}
+              >
+                {deletePending ? (
+                  <Loader className="animate-spin" />
+                ) : (
+                  <TbTrash size={10} />
+                )}
+              </Button>
+            </ConfirmModel>
             <p>
               <span className="font-semibold">Delivery Service:</span>{" "}
               {delivery.deliveryService}

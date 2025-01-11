@@ -193,7 +193,7 @@ const OrderDetailsPage = () => {
             <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-800">
               <FaClock className="mr-2 text-[#f7b232]" /> Order Status
             </h2>
-            {orderData.Delivery !== null ? (
+            {orderData.Delivery.length !== 0 ? (
               <>
                 <p className="text-sm text-muted-foreground">
                   Current Delivery Status:
