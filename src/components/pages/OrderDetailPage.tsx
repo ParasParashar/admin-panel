@@ -46,25 +46,6 @@ const OrderDetailsPage = () => {
     return <div className="text-center py-8">Order not found.</div>;
   }
 
-  //   try {
-  //     setIsPending(true);
-  //     const { data } = await AxiosBase.put(`/api/admin/order/update/${id}`, {
-  //       status: newStatus,
-  //       paymentMethod: orderData.paymentMethod,
-  //     });
-  //     if (!data.success)
-  //       throw new Error(data.message || "Failed to update status.");
-
-  //     toast.success("Status updated successfully");
-  //     queryClient.invalidateQueries({ queryKey: ["orderDetails", id] });
-  //   } catch (error: any) {
-  //     console.error(error.message);
-  //     toast.error("Failed to update delivery status");
-  //   } finally {
-  //     setIsPending(false);
-  //   }
-  // };
-
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "PENDING":

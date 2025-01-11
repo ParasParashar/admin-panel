@@ -10,7 +10,6 @@ import { TbTrash } from "react-icons/tb";
 import { Loader } from "lucide-react";
 
 const ShiprocketDeliveries = ({ deliveries }: { deliveries?: Delivery[] }) => {
-  console.log(deliveries);
   const { id } = useParams();
   const queryClient = useQueryClient();
   // Mutation for deleting a product
