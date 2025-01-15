@@ -17,8 +17,6 @@ const LandingPage = () => {
         <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500 opacity-20 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-0 w-72 h-72 bg-pink-500 opacity-20 rounded-full blur-3xl"></div>
       </div>
-
-      {/* Main Content */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
