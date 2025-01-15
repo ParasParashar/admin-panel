@@ -68,6 +68,7 @@ const OrderDetailsPage = () => {
         <h1 className="text-3xl space-y-2 font-bold text-white">
           Order Details
         </h1>
+        {/* this is the order details data */}
         <p className="text-muted space-y-2">
           Order ID:
           <span className="text-blue-100 font-bold ml-2">#{orderData.id}</span>
