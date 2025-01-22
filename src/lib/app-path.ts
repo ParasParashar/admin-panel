@@ -15,12 +15,12 @@ export const items = [
     {
         title: "Products",
         url: "/product",
-        icon: Settings,
+        icon: TbCategoryPlus,
     },
     {
         title: "Category",
         url: "/category",
-        icon: TbCategoryPlus,
+        icon: Settings,
     },
     {
         title: "Orders",

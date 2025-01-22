@@ -19,11 +19,10 @@ import AxiosBase from "@/lib/axios";
 import { FaRupeeSign } from "react-icons/fa";
 
 import { OrderDetailsSkeleton } from "../loaders/OrderSkeleton";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { SubOrder } from "@/lib/type";
-import { useState } from "react";
-import CreateDelivery from "../orders/CreateDelivery";
 import ShiprocketDeliveries from "../orders/ShipRocketDeliveries";
+import DeliverySystem from "../orders/DeliverySystem";
 
 const OrderDetailsPage = () => {
   const { id } = useParams();
@@ -174,6 +173,9 @@ const OrderDetailsPage = () => {
           <div className="bg-secondary p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-800">
               <FaClock className="mr-2 text-[#f7b232]" /> Order Status
+              <span className="text-xs text-muted-foreground    capitalize ml-auto ">
+                {orderData.deliveryStatus}
+              </span>
             </h2>
             {orderData.Delivery.length !== 0 ? (
               <>
@@ -190,8 +192,14 @@ const OrderDetailsPage = () => {
               </>
             ) : (
               <div className="flex items-center justify-between space-x-4 mt-5">
-                <span>{getStatusIcon(orderData.deliveryStatus)}</span>
-                <CreateDelivery />
+                <span className="flex gap-3 items-center">
+                  {getStatusIcon(orderData.deliveryStatus)}Create Delivery
+                </span>
+                {/* <CreateDelivery /> */}
+                <DeliverySystem
+                  paymentMethod={orderData.parentOrder.paymentMethod}
+                  deliveryStatus={orderData.deliveryStatus}
+                />
               </div>
             )}
           </div>

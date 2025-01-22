@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Order, OrderItem, SubOrder } from "@/lib/type";
+import { SubOrder } from "@/lib/type";
 
 // Fetch Orders Function
 const fetchOrders = async ({ page, size }: { page: number; size: number }) => {
@@ -70,7 +70,7 @@ const OrderPage = () => {
   return (
     <main className="h-full">
       <h2 className="text-primary bg-secondary font-semibold text-xl mb-2 text-center py-1 rounded-sm">
-        All Orders
+        All Orders {ordersData?.pagination?.totalOrders}
       </h2>
 
       {ordersData.orders?.length > 0 ? (
